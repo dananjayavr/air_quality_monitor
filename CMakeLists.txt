@@ -51,18 +51,18 @@ set(STM32_HAL_DRIVERS
 
         Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c
 
-        Inc/stm32f4xx_hal_conf.h
-		Inc/stm32f4xx_it.h
-        Inc/main.h
-        Inc/debug.h
-        Inc/config.h
-		
-        Src/main.c
-        Src/debug.c
-        Src/retarget.c
-        Src/stm32f4xx_hal_msp.c
-        Src/stm32f4xx_it.c
-        Src/system_stm32f4xx.c
+        App/Inc/stm32f4xx_hal_conf.h
+        App/Inc/stm32f4xx_it.h
+        App/Inc/main.h
+        App/Inc/debug.h
+        App/Inc/config.h
+
+        App/Src/main.c
+        App/Src/debug.c
+        Middleware/retarget/retarget.c
+        App/Src/stm32f4xx_hal_msp.c
+        App/Src/stm32f4xx_it.c
+        App/Src/system_stm32f4xx.c
 		
         startup_stm32f439xx.s
 
@@ -89,7 +89,7 @@ target_compile_definitions(${EXECUTABLE} PRIVATE
 )
 
 target_include_directories(${EXECUTABLE} SYSTEM PRIVATE # adding system will also discard warnings from header files
-        Inc
+        App/Inc
         Drivers/STM32F4xx_HAL_Driver/Inc
         Drivers/CMSIS/Device/ST/STM32F4xx/Include
         Drivers/CMSIS/Include

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "main.h"
 #include "debug.h"
-#include "retarget.h"
+#include "../../Middleware/retarget/retarget.h"
 
 #define TRACE_LEVEL TRACE_LEVEL_INFO
 
@@ -86,6 +86,7 @@ int main(void)
   TRACE_DEBUG("SYSCLK=%lu Hz\r\n",HAL_RCC_GetSysClockFreq());
 
   /* Infinite loop */
+  TRACE_INFO("Running main loop...\r\n");
   while (1)
   {
       if(pb_toggle) {

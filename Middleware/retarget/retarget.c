@@ -4,16 +4,12 @@
 // All credit to Carmine Noviello for this code
 // https://github.com/cnoviello/mastering-stm32/blob/master/nucleo-f030R8/system/src/retarget/retarget.c
 
-#include <_ansi.h>
-#include <_syslist.h>
-#include <errno.h>
-#include <sys/time.h>
-#include <sys/times.h>
-#include <limits.h>
-#include <signal.h>
-#include <retarget.h>
-#include <stdint.h>
+
 #include <stdio.h>
+#include <errno.h>
+#include <limits.h>
+#include "retarget.h"
+
 
 #if !defined(OS_USE_SEMIHOSTING)
 
@@ -72,6 +68,8 @@ int _lseek(int fd, int ptr, int dir) {
 
 int _read(int fd, char* ptr, int len) {
     HAL_StatusTypeDef hstatus;
+
+    UNUSED(len);
 
     if (fd == STDIN_FILENO) {
         hstatus = HAL_UART_Receive(gHuart, (uint8_t *) ptr, 1, HAL_MAX_DELAY);
