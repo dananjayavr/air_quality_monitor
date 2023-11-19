@@ -8,6 +8,7 @@
 //Dependencies
 #include <stdio.h>
 #include <stdlib.h>
+#include "stm32f4xx_hal.h"
 #include "config.h"
 
 #define PRIX8        "hhX"

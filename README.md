@@ -34,6 +34,18 @@
 - Pressing the Run button should now flash the target
 - To debug, place a breakpoint and click on the green bug (debug) icon. The debugger should stop at the breakpoint
 
+#### Wiring 
+
+##### UART
+UART2 => PD5 (TX), PD6 (RX) => USB to UART (RaspberryPi Debugger Yellow PD5 / Orange PD6 ) => PC
+UART3 => printf redirect to ST-Link / Virtual COM port => PC
+UART5 => PC12 (TX), PD2 (RX) => PMS5003 (Green jumper cable (on PD2 / RX) to 'RX' on sensor breakout board)
+
+##### Sensor Breakout Breadboard
+I2C1 => SCL (PB8) Yellow jumper cable, SDA (PB9) Green jumper cable.
+Go to the breadboard.
+3.3V and GND supplied from CN8 connectors to breadboard rails. 
+
 ### Troubleshooting
 
 - Undefined reference to _sbrk: https://stackoverflow.com/questions/5764414/undefined-reference-to-sbrk

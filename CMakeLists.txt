@@ -48,10 +48,15 @@ set(STM32_HAL_DRIVERS
         Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c
         Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c
         Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c
+        Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c
+        Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.c
 
         Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c
 
         Drivers/PMS5003/PMS5003_HAL_STM32.c
+
+        Drivers/BME280/bme280.c
+        Drivers/BME280/bme280_port.c
 
         Middleware/reusable/console.c
         Middleware/reusable/consoleIo.c
@@ -102,6 +107,7 @@ target_include_directories(${EXECUTABLE} SYSTEM PRIVATE # adding system will als
         Middleware/reusable
         Middleware/retarget
         Drivers/PMS5003
+        Drivers/BME280
         Drivers/STM32F4xx_HAL_Driver/Inc
         Drivers/CMSIS/Device/ST/STM32F4xx/Include
         Drivers/CMSIS/Include
@@ -142,9 +148,10 @@ target_link_options(${EXECUTABLE} PRIVATE
         -specs=nosys.specs # added to fix _sbrk not found issue
         -lc
         -lm
-        -lnosys
+        #-lnosys # removed so I can enable print_float without linking errors
         -Wl,-Map=${PROJECT_NAME}.map,--cref
         -Wl,--gc-sections
+        -u _printf_float
         )
 
 # Print executable size

@@ -6,5 +6,4 @@
 #define _CONFIG_H
 
 #define TRACE_LEVEL TRACE_LEVEL_INFO
-
 #endif //_CONFIG_H

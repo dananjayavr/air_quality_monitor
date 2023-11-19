@@ -3,7 +3,9 @@
 //
 
 //Dependencies
+#include <stdio.h>
 #include "debug.h"
+
 
 //Debug related functions
 void debugInit(uint32_t baudrate) {
