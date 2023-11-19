@@ -1,6 +1,7 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_it.h"
 
+extern UART_HandleTypeDef huart2;
 extern TIM_HandleTypeDef htim2;
 
 /******************************************************************************/
@@ -109,4 +110,8 @@ void EXTI15_10_IRQHandler(void) {
 void TIM2_IRQHandler(void)
 {
     HAL_TIM_IRQHandler(&htim2);
+}
+
+void USART2_IRQHandler(void) {
+    HAL_UART_IRQHandler(&huart2);
 }

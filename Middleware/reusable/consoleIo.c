@@ -2,45 +2,60 @@
 // In an embedded system, this might interface to a UART driver.
 
 #include "consoleIo.h"
-#include <stdio.h>
 
-//use the windows conio.h for kbhit, or a POSIX reproduction
-#ifdef _WIN32
-#include <conio.h>
-#else
-#include "conioCompat.h"
-#endif
+extern UART_HandleTypeDef huart2;
 
-static int getch_noblock() {
-    if (_kbhit())
-        return _getch();
-    else
-        return EOF;
+uint8_t ch = 0; // received character
+uint8_t rx_buffer[256]; // buffer for received commands
+uint8_t rx_counter = 0; // counter to keep track of buffer position
+uint8_t buffer_ready = 0; // flag to determine if a complete command has been received
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    HAL_UART_Transmit(huart,&ch,1,HAL_MAX_DELAY); // echo
+
+    //TODO: handle cases of buffer overflow gracefully
+    rx_buffer[rx_counter++] = ch; // load each character to buffer
+    if(ch == '\r' || ch == '\n')
+        buffer_ready = 1; // if a new-line character or a carriage return character is received, set the relevant flag
+
+    HAL_UART_Receive_IT(huart, &ch, 1); // continue receiving character(s)
 }
 
 eConsoleError ConsoleIoInit(void)
 {
-	return CONSOLE_SUCCESS;
+    HAL_UART_Receive_IT(&huart2, &ch, 1); // initiate reception
+    return CONSOLE_SUCCESS;
 }
 eConsoleError ConsoleIoReceive(uint8_t *buffer, const uint32_t bufferLength, uint32_t *readLength)
 {
-	uint32_t i = 0;
-	char ch;
-	
-	ch = getch_noblock();
-	while ( ( EOF != ch ) && ( i < bufferLength ) )
-	{
-		buffer[i] = (uint8_t) ch;
-		i++;
-		ch = getch_noblock();
-	}
-	*readLength = i;
-	return CONSOLE_SUCCESS;
+    UNUSED(bufferLength);
+
+    if(buffer_ready) { // if a complete command is received
+        buffer_ready = 0; // unset flag
+        memcpy(buffer,rx_buffer,rx_counter); // copy the received command to library buffer
+        *readLength = rx_counter; // set appropriate length
+
+        memset(rx_buffer,0,256); // clear receive buffer
+        rx_counter = 0; // clear pointer so we can start from the beginning next time around
+    } else {
+        buffer[0] = '\n'; // if no command is received, send the '>'
+        *readLength = 0;
+    }
+
+    return CONSOLE_SUCCESS;
 }
 
 eConsoleError ConsoleIoSendString(const char *buffer)
 {
-	printf("%s", buffer);
+    uint8_t c = 0;
+    while (*buffer != '\0') {
+        c = *buffer;
+        HAL_UART_Transmit(&huart2,&c,1,HAL_MAX_DELAY);
+        c = 0;
+        buffer++;
+    }
+
 	return CONSOLE_SUCCESS;
 }
 

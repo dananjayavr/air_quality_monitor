@@ -51,6 +51,10 @@ set(STM32_HAL_DRIVERS
 
         Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c
 
+        Middleware/reusable/console.c
+        Middleware/reusable/consoleIo.c
+        Middleware/reusable/consoleCommands.c
+
         App/Inc/stm32f4xx_hal_conf.h
         App/Inc/stm32f4xx_it.h
         App/Inc/main.h
@@ -90,6 +94,8 @@ target_compile_definitions(${EXECUTABLE} PRIVATE
 
 target_include_directories(${EXECUTABLE} SYSTEM PRIVATE # adding system will also discard warnings from header files
         App/Inc
+        Middleware/reusable
+        Middleware/retarget
         Drivers/STM32F4xx_HAL_Driver/Inc
         Drivers/CMSIS/Device/ST/STM32F4xx/Include
         Drivers/CMSIS/Include

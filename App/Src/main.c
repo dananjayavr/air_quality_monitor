@@ -1,20 +1,23 @@
 #include <stdio.h>
 #include "main.h"
 #include "debug.h"
-#include "../../Middleware/retarget/retarget.h"
+#include "console.h"
+#include "retarget.h"
 
 #define TRACE_LEVEL TRACE_LEVEL_INFO
 
 volatile uint8_t pb_state; // hold push button state
 volatile uint8_t pb_toggle; // hold toggled push button state
 
-UART_HandleTypeDef huart3;
+UART_HandleTypeDef huart2; // UART console
+UART_HandleTypeDef huart3; // printf redirect
 TIM_HandleTypeDef htim2;
 
 void Error_Handler(void);
 void SystemClock_Config(void);
 
 static void MX_GPIO_Init(void);
+static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM2_Init(void);
 
@@ -70,6 +73,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART3_UART_Init();
+  MX_USART2_UART_Init();
   MX_TIM2_Init();
 
   /* Initialize printf UART redirect */
@@ -87,6 +91,8 @@ int main(void)
 
   /* Infinite loop */
   TRACE_INFO("Running main loop...\r\n");
+  ConsoleInit();
+
   while (1)
   {
       if(pb_toggle) {
@@ -94,6 +100,8 @@ int main(void)
       } else {
           HAL_GPIO_TogglePin(LD1_GPIO_Port,LD1_Pin);
       }
+
+      ConsoleProcess();
 
       HAL_Delay(100);
   }
@@ -163,6 +171,30 @@ static void MX_USART3_UART_Init(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+    huart2.Instance = USART2;
+    huart2.Init.BaudRate = 115200;
+    huart2.Init.WordLength = UART_WORDLENGTH_8B;
+    huart2.Init.StopBits = UART_STOPBITS_1;
+    huart2.Init.Parity = UART_PARITY_NONE;
+    huart2.Init.Mode = UART_MODE_TX_RX;
+    huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+    if (HAL_UART_Init(&huart2) != HAL_OK)
+    {
+        Error_Handler();
+    }
+
+    HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(USART2_IRQn);
 }
 
 /**
