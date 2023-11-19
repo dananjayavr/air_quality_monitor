@@ -1,6 +1,8 @@
 #ifndef _MAIN_H
 #define _MAIN_H
 
+#include "stm32f4xx_hal.h"
+
 #define LD1_Pin GPIO_PIN_0
 #define LD1_GPIO_Port GPIOB
 

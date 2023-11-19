@@ -51,9 +51,14 @@ set(STM32_HAL_DRIVERS
 
         Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c
 
+        Drivers/PMS5003/PMS5003_HAL_STM32.c
+
         Middleware/reusable/console.c
         Middleware/reusable/consoleIo.c
         Middleware/reusable/consoleCommands.c
+
+        Middleware/retarget/retarget.c
+
 
         App/Inc/stm32f4xx_hal_conf.h
         App/Inc/stm32f4xx_it.h
@@ -63,7 +68,7 @@ set(STM32_HAL_DRIVERS
 
         App/Src/main.c
         App/Src/debug.c
-        Middleware/retarget/retarget.c
+
         App/Src/stm32f4xx_hal_msp.c
         App/Src/stm32f4xx_it.c
         App/Src/system_stm32f4xx.c
@@ -96,6 +101,7 @@ target_include_directories(${EXECUTABLE} SYSTEM PRIVATE # adding system will als
         App/Inc
         Middleware/reusable
         Middleware/retarget
+        Drivers/PMS5003
         Drivers/STM32F4xx_HAL_Driver/Inc
         Drivers/CMSIS/Device/ST/STM32F4xx/Include
         Drivers/CMSIS/Include

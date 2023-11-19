@@ -1,8 +1,10 @@
 #include <stdio.h>
+#include <string.h>
 #include "main.h"
 #include "debug.h"
 #include "console.h"
 #include "retarget.h"
+#include "PMS5003_HAL_STM32.h"
 
 #define TRACE_LEVEL TRACE_LEVEL_INFO
 
@@ -11,7 +13,11 @@ volatile uint8_t pb_toggle; // hold toggled push button state
 
 UART_HandleTypeDef huart2; // UART console
 UART_HandleTypeDef huart3; // printf redirect
+UART_HandleTypeDef huart5; // PMS5003 particulate matter sensor
 TIM_HandleTypeDef htim2;
+
+PMS_typedef PMS5003 = {0};
+char mesg[1000] = {0};
 
 void Error_Handler(void);
 void SystemClock_Config(void);
@@ -19,7 +25,10 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_UART5_Init(void);
 static void MX_TIM2_Init(void);
+
+void sensor_init(void);
 
 /**
   * @brief  EXTI line detection callbacks.
@@ -74,10 +83,14 @@ int main(void)
   MX_GPIO_Init();
   MX_USART3_UART_Init();
   MX_USART2_UART_Init();
+  MX_UART5_Init();
   MX_TIM2_Init();
 
   /* Initialize printf UART redirect */
   RetargetInit(&huart3);
+
+  // Initialize PMS5003 sensor
+  sensor_init();
 
   TRACE_INFO("*******************************\r\n");
   TRACE_INFO("Welcome to air quality monitor.\r\n");
@@ -95,6 +108,30 @@ int main(void)
 
   while (1)
   {
+      if (PMS_read(&PMS5003) == PMS_OK) {
+
+          sprintf(mesg, "\r\n\
+            PM1.0 factory	  is : %d \r\n\
+            PM2.5 factory	  is : %d \r\n\
+            PM10  factory	  is : %d \r\n\
+            PM1.0 atmospheric is : %d \r\n\
+            PM2.5 atmospheric is : %d \r\n\
+            PM10  atmospheric is : %d \r\n\
+            0.3um density	  is : %d \r\n\
+            0.5um density	  is : %d \r\n\
+            1.0um density 	  is : %d \r\n\
+            2.5um density 	  is : %d \r\n\
+            5.0um density 	  is : %d \r\n\
+            10um  density	  is : %d \r\n", PMS5003.PM1_0_factory,
+                              PMS5003.PM2_5_factory, PMS5003.PM10_factory, PMS5003.PM1_0_atmospheric,
+                              PMS5003.PM2_5_atmospheric, PMS5003.PM10_atmospheric, PMS5003.density_0_3um,
+                              PMS5003.density_0_5um, PMS5003.density_1_0um, PMS5003.density_2_5um,
+                              PMS5003.density_5_0um, PMS5003.density_10um
+          );
+
+          TRACE_INFO("PMS5003: %s\r\n",mesg);
+      }
+
       if(pb_toggle) {
           HAL_GPIO_WritePin(USER_Btn_GPIO_Port,USER_Btn_Pin,GPIO_PIN_RESET);
       } else {
@@ -198,6 +235,26 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
+  * @brief UART5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART5_Init(void)
+{
+    huart5.Instance = UART5;
+    huart5.Init.BaudRate = 9600;
+    huart5.Init.WordLength = UART_WORDLENGTH_8B;
+    huart5.Init.StopBits = UART_STOPBITS_1;
+    huart5.Init.Parity = UART_PARITY_NONE;
+    huart5.Init.Mode = UART_MODE_TX_RX;
+    huart5.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart5.Init.OverSampling = UART_OVERSAMPLING_16;
+    if (HAL_UART_Init(&huart5) != HAL_OK)
+    {
+        Error_Handler();
+    }
+}
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -293,6 +350,20 @@ static void MX_TIM2_Init(void)
     HAL_NVIC_SetPriority(TIM2_IRQn, 14, 0);
     HAL_NVIC_EnableIRQ(TIM2_IRQn);
 
+}
+
+/*
+ * @brief Function for PMS5003 configuration
+ */
+void sensor_init(void)
+{
+    PMS5003.PMS_huart = &huart5; 			// passing uart handler to communicate with sensor
+    PMS5003.PMS_MODE = PMS_MODE_ACTIVE;	// choosing the MODE
+    if (PMS_Init(&PMS5003) != PMS_OK)
+    {
+        TRACE_INFO("PMS5003 Sensor Initialization Failed.\r\n");
+        Error_Handler();
+    }
 }
 
 /**
