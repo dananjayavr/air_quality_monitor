@@ -41,13 +41,14 @@ BME280_INTF_RET_TYPE bme280_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t l
         for (stringpos = 0; stringpos < len; stringpos++) {
             *(reg_data + stringpos) = array[stringpos];
         }
-        return status;
+
+        return error;
+
     } else {
         // The BME280 API calls for 0 return value as a success, and -1 returned as failure
         error = (-1);
+        return error;
     }
-
-    return error;
 }
 
 /*!
@@ -73,7 +74,7 @@ BME280_INTF_RET_TYPE bme280_write(uint8_t reg_addr, const uint8_t *reg_data, uin
 
     status = HAL_I2C_Mem_Write(&hi2c1,						// i2c handle
                                (uint8_t)(BME280_ADDR),		// i2c address, left aligned
-                               (uint8_t)reg_addr,			// register address
+                               reg_addr,			// register address
                                I2C_MEMADD_SIZE_8BIT,			// bme280 uses 8bit register addresses
                                (uint8_t*)(&reg_data),		// write returned data to reg_data
                                len,							// write how many bytes
@@ -97,6 +98,6 @@ BME280_INTF_RET_TYPE bme280_write(uint8_t reg_addr, const uint8_t *reg_data, uin
  *
  */
 void bme280_delay(uint32_t period, void *intf_ptr) {
-    HAL_Delay(period / 1000);
+    HAL_Delay(period/1000);
 }
 

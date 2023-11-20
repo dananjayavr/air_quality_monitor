@@ -84,9 +84,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   */
 int main(void)
 {
-    int8_t bme280_rslt;
+    int8_t bme280_rslt = 0;
     uint8_t bme280_status_reg;
-    uint32_t bme280_period;
+    uint32_t bme280_period = 0;
     struct bme280_dev bme280;
     struct bme280_settings bme280Settings;
     struct bme280_data bme280_comp_data;
@@ -138,12 +138,11 @@ int main(void)
 
         /* Configuring the over-sampling rate, filter coefficient and standby time */
         /* Overwrite the desired settings */
-        bme280Settings.filter = BME280_FILTER_COEFF_2;
-
         /* Over-sampling rate for humidity, temperature and pressure */
         bme280Settings.osr_h = BME280_OVERSAMPLING_1X;
-        bme280Settings.osr_p = BME280_OVERSAMPLING_1X;
-        bme280Settings.osr_t = BME280_OVERSAMPLING_1X;
+        bme280Settings.osr_p = BME280_OVERSAMPLING_16X;
+        bme280Settings.osr_t = BME280_OVERSAMPLING_2X;
+        bme280Settings.filter = BME280_FILTER_COEFF_16;
 
         /* Setting the standby time */
         bme280Settings.standby_time = BME280_STANDBY_TIME_0_5_MS;
@@ -156,12 +155,14 @@ int main(void)
         }
 
         /* Always set the power mode after setting the configuration */
-        bme280_rslt = bme280_set_sensor_mode(BME280_POWERMODE_NORMAL, &bme280);
+        bme280_rslt = bme280_set_sensor_mode(BME280_POWERMODE_FORCED, &bme280);
         if(bme280_rslt < 0) {
             TRACE_INFO("BME280 Set Sensor mode failed.\r\n");
             bme280_error_codes_print_result("bme280_set_sensor_mode", bme280_rslt);
             break;
         }
+
+        bme280.delay_us(40,bme280.intf_ptr);
 
         /* Calculate measurement time in microseconds */
         bme280_rslt = bme280_cal_meas_delay(&bme280_period, &bme280Settings);
@@ -225,26 +226,32 @@ int main(void)
         bme280_rslt = bme280_get_regs(BME280_REG_STATUS, &bme280_status_reg, 1, &bme280);
         if(bme280_rslt < 0) {
             TRACE_INFO("BME280 Get regs failed.\r\n");
-            break;
         }
 
-        if (1 /*bme280_status_reg & BME280_STATUS_MEAS_DONE*/)
+        if (bme280_status_reg | BME280_STATUS_MEAS_DONE)
         {
             /* Measurement time delay given to read sample */
             bme280.delay_us(bme280_period, bme280.intf_ptr);
 
             /* Read compensated data */
-            bme280_rslt = bme280_get_sensor_data(BME280_TEMP, &bme280_comp_data, &bme280);
+            bme280_rslt = bme280_get_sensor_data(BME280_ALL, &bme280_comp_data, &bme280);
             if(bme280_rslt < 0) {
                 TRACE_INFO("BME280 Get sensor data failed.\r\n");
-                break;
             }
 
             TRACE_INFO("BME280:\r\n   "
-                   "Temperature: %.3f deg C\r\n", bme280_comp_data.temperature);
+                   "\tTemperature: %.3f deg C\r\n\tPressure: %.3f hPa\r\n\tHumidity: %.3f%%\r\n", bme280_comp_data.temperature,
+                   0.01 * bme280_comp_data.pressure,bme280_comp_data.humidity
+           );
         }
 
-        HAL_Delay(100);
+        /* set sensor mode for subsequent reads */
+        bme280_rslt = bme280_set_sensor_mode(BME280_POWERMODE_FORCED, &bme280);
+        if(bme280_rslt < 0) {
+            TRACE_INFO("BME280 Set Sensor mode failed.\r\n");
+            bme280_error_codes_print_result("bme280_set_sensor_mode", bme280_rslt);
+            break;
+        }
     }
 }
 
