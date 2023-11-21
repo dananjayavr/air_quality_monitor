@@ -79,7 +79,7 @@ BME280_INTF_RET_TYPE bme280_write(uint8_t reg_addr, const uint8_t *reg_data, uin
                                (uint8_t)(BME280_ADDR),		// i2c address, left aligned
                                reg_addr,			// register address
                                I2C_MEMADD_SIZE_8BIT,			// bme280 uses 8bit register addresses
-                               (uint8_t*)(&reg_data),		// write returned data to reg_data
+                               (uint8_t*)(reg_data),		// write returned data to reg_data
                                (uint16_t )len,							// write how many bytes
                                100);							// timeout
 

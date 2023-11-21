@@ -13,7 +13,6 @@ BME68X_INTF_RET_TYPE bme68x_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32
 {
     HAL_StatusTypeDef status;
     uint8_t array[32] = { 0 };
-    uint8_t stringpos = 0;
     array[0] = reg_addr;
 
     UNUSED(intf_ptr);
@@ -29,10 +28,10 @@ BME68X_INTF_RET_TYPE bme68x_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32
                               100);					    // timeout
 
     if(status == HAL_OK) {
-        for (stringpos = 0; stringpos < len; stringpos++) {
+        for (uint8_t stringpos = 0; stringpos < len; stringpos++) {
             *(reg_data + stringpos) = array[stringpos];
         }
-        return status;
+        return 0;
     } else {
         return -1;
     }
@@ -53,7 +52,7 @@ BME68X_INTF_RET_TYPE bme68x_i2c_write(uint8_t reg_addr, const uint8_t *reg_data,
                                BME688_ADDR,		            // I2C address, left aligned
                                reg_addr,			// register address
                                I2C_MEMADD_SIZE_8BIT,	    // BME688 uses 8bit register addresses
-                               (uint8_t*) (&reg_data),		// write returned data to reg_data
+                               reg_data,		// write returned data to reg_data
                                len,			        	// write how many bytes
                                100);					    // timeout
 

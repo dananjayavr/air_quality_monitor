@@ -85,7 +85,7 @@ void bme280_read_sensor(void) {
         TRACE_INFO("BME280 Get regs failed.\r\n");
     }
 
-    if (bme280_status_reg & BME280_STATUS_MEAS_DONE)
+    if (1/*bme280_status_reg & BME280_STATUS_MEAS_DONE*/)
     {
         /* Measurement time delay given to read sample */
         bme280.delay_us(bme280_period, bme280.intf_ptr);
