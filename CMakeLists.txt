@@ -117,6 +117,8 @@ target_include_directories(${EXECUTABLE} SYSTEM PRIVATE # adding system will als
         Drivers/PMS5003
         Drivers/BME280
         Drivers/BME688
+        Drivers/BSEC/Inc
+        Drivers/BSEC/Lib
         Drivers/STM32F4xx_HAL_Driver/Inc
         Drivers/CMSIS/Device/ST/STM32F4xx/Include
         Drivers/CMSIS/Include
@@ -162,6 +164,9 @@ target_link_options(${EXECUTABLE} PRIVATE
         -Wl,--gc-sections
         -u _printf_float
         )
+
+# Add BSEC library
+target_link_libraries(${EXECUTABLE} PUBLIC ${CMAKE_SOURCE_DIR}/Drivers/BSEC/Lib/libalgobsec.a)
 
 # Print executable size
 add_custom_command(TARGET ${EXECUTABLE}

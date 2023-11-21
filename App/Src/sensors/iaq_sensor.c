@@ -82,7 +82,7 @@ void bme688_read_sensor(void) {
 
     if (n_fields) {
         TRACE_INFO("BME688:\r\n   "
-                   "\tTemperature: %.3f deg C\r\n\tPressure: %.3f hPa\r\n\tHumidity: %.2f%%\r\n\tGas resistance: %.2f\r\n\tStatus: 0x%x\r\n",
+                   "\tTemperature: %.3f deg C\r\n\tPressure: %.3f hPa\r\n\tHumidity: %.2f%%\r\n\tGas resistance: %.2f Ohm\r\n\tStatus: 0x%x\r\n",
                    data.temperature,
                    data.pressure,data.humidity,data.gas_resistance,data.status);
     } else {

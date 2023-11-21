@@ -3,6 +3,7 @@
 #include "sensors/pm_sensor.h"
 #include "sensors/env_sensor.h"
 #include "sensors/iaq_sensor.h"
+#include "bsec_interface.h"
 
 #define TRACE_LEVEL TRACE_LEVEL_INFO
 
@@ -97,6 +98,8 @@ int main(void)
     TRACE_INFO("Initializing indoor air quality sensor...\r\n");
     bme688_init_sensor();
 
+    bsec_init();
+
     HAL_Delay(1000);
 
     /* Output clock speeds of the MCU */
@@ -126,7 +129,7 @@ int main(void)
 
         bme688_read_sensor();
 
-        HAL_Delay(100);
+        HAL_Delay(500);
     }
 }
 
