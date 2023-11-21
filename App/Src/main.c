@@ -87,12 +87,14 @@ int main(void)
     // Initialize PMS5003 sensor
     pm_sensor_init();
 
-    //TRACE_INFO("Initializing environmental data sensor...\r\n");
-    // Initialize BME280 sensor
-    //bme280_init_sensor();
 
-    //TRACE_INFO("Initializing indoor air quality sensor...\r\n");
+    // Initialize BME280 sensor
+    TRACE_INFO("Initializing environmental data sensor...\r\n");
+    bme280_init_sensor();
+
+
     // Initialize BME688 sensor
+    //TRACE_INFO("Initializing indoor air quality sensor...\r\n");
     //bme688_init_sensor();
 
     HAL_Delay(1000);
@@ -120,7 +122,7 @@ int main(void)
 
         ConsoleProcess();
 
-        //bme280_read_sensor();
+        bme280_read_sensor();
 
         //bme688_read_sensor();
 
