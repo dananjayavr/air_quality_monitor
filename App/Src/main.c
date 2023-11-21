@@ -2,6 +2,7 @@
 #include "hardware_init.h"
 #include "sensors/pm_sensor.h"
 #include "sensors/env_sensor.h"
+#include "sensors/iaq_sensor.h"
 
 #define TRACE_LEVEL TRACE_LEVEL_INFO
 
@@ -78,15 +79,23 @@ int main(void)
     /* Initialize printf UART redirect */
     RetargetInit(&huart3);
 
-    // Initialize PMS5003 sensor
-    pm_sensor_init();
-
-    // Initialize BME280 sensor
-    bme280_init_sensor();
-
     TRACE_INFO("*******************************\r\n");
     TRACE_INFO("Welcome to air quality monitor.\r\n");
     TRACE_INFO("*******************************\r\n");
+
+    TRACE_INFO("Initializing particulate matter sensor...\r\n");
+    // Initialize PMS5003 sensor
+    pm_sensor_init();
+
+    //TRACE_INFO("Initializing environmental data sensor...\r\n");
+    // Initialize BME280 sensor
+    //bme280_init_sensor();
+
+    //TRACE_INFO("Initializing indoor air quality sensor...\r\n");
+    // Initialize BME688 sensor
+    //bme688_init_sensor();
+
+    HAL_Delay(1000);
 
     /* Output clock speeds of the MCU */
     TRACE_DEBUG("HCLK=%lu Hz\r\n",HAL_RCC_GetHCLKFreq());
@@ -94,10 +103,11 @@ int main(void)
     TRACE_DEBUG("PCLK2=%lu Hz\r\n",HAL_RCC_GetPCLK2Freq());
     TRACE_DEBUG("SYSCLK=%lu Hz\r\n",HAL_RCC_GetSysClockFreq());
 
-    /* Infinite loop */
-    TRACE_INFO("Running main loop...\r\n");
+    TRACE_INFO("Initializing UART console...\r\n");
     ConsoleInit();
 
+    TRACE_INFO("Running state machine...\r\n");
+    /* Infinite loop */
     while (1)
     {
         pm_sensor_read();
@@ -110,7 +120,9 @@ int main(void)
 
         ConsoleProcess();
 
-        bme280_read_sensor();
+        //bme280_read_sensor();
+
+        //bme688_read_sensor();
 
         HAL_Delay(100);
     }

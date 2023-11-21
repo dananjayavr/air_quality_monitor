@@ -102,7 +102,10 @@ BME280_INTF_RET_TYPE bme280_write(uint8_t reg_addr, const uint8_t *reg_data, uin
  */
 void bme280_delay(uint32_t period, void *intf_ptr) {
     UNUSED(intf_ptr);
-
-    HAL_Delay(period/1000);
+    if(period % 1000 == 0) {
+        HAL_Delay(period/1000);
+    } else {
+        HAL_Delay(100);
+    }
 }
 

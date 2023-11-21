@@ -2,7 +2,7 @@
 // Created by Dananjaya RAMANAYAKE on 21/11/2023.
 //
 #include "main.h"
-#include "sensors/pm_sensor.h"
+#include "pm_sensor.h"
 
 PMS_typedef PMS5003 = {0};
 char mesg[1000] = {0};

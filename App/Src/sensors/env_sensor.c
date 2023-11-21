@@ -2,7 +2,7 @@
 // Created by Dananjaya RAMANAYAKE on 21/11/2023.
 //
 
-#include "sensors/env_sensor.h"
+#include "env_sensor.h"
 
 int8_t bme280_rslt = 0;
 uint8_t bme280_status_reg;
@@ -72,8 +72,9 @@ void bme280_init_sensor(void) {
             break;
         }
 
-        TRACE_INFO("\nTemperature calculation (Data displayed are compensated values)\r\n");
-        TRACE_INFO("Measurement time : %lu us\r\n", (long unsigned int)bme280_period);
+        TRACE_DEBUG("\nTemperature calculation (Data displayed are compensated values)\r\n");
+        TRACE_DEBUG("Measurement time : %lu us\r\n", (long unsigned int)bme280_period);
+
     } while (0);
 }
 

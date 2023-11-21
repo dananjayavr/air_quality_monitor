@@ -57,6 +57,8 @@ set(STM32_HAL_DRIVERS
 
         Drivers/BME280/bme280.c
         Drivers/BME280/bme280_port.c
+        Drivers/BME688/bme68x.c
+        Drivers/BME688/bme688_port.c
 
         Middleware/reusable/console.c
         Middleware/reusable/consoleIo.c
@@ -76,6 +78,7 @@ set(STM32_HAL_DRIVERS
         App/Src/hardware_init.c
         App/Src/sensors/pm_sensor.c
         App/Src/sensors/env_sensor.c
+        App/Src/sensors/iaq_sensor.c
 
         App/Src/system/stm32f4xx_hal_msp.c
         App/Src/system/stm32f4xx_it.c
@@ -113,6 +116,7 @@ target_include_directories(${EXECUTABLE} SYSTEM PRIVATE # adding system will als
         Middleware/retarget
         Drivers/PMS5003
         Drivers/BME280
+        Drivers/BME688
         Drivers/STM32F4xx_HAL_Driver/Inc
         Drivers/CMSIS/Device/ST/STM32F4xx/Include
         Drivers/CMSIS/Include
