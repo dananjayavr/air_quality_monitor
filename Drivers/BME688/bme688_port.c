@@ -73,5 +73,5 @@ void bme68x_delay_us(uint32_t period, void *intf_ptr)
         HAL_Delay(100);
     }
 #endif
-    HAL_Delay(period);
+    HAL_Delay(period / 1000);
 }

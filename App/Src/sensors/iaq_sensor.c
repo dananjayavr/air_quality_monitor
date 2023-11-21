@@ -33,7 +33,7 @@ void bme688_init_sensor(void) {
         }
 
         conf.filter = BME68X_FILTER_OFF;
-        conf.odr = BME68X_ODR_20_MS;//BME68X_ODR_NONE;
+        conf.odr = BME68X_ODR_NONE;
         conf.os_hum = BME68X_OS_16X;
         conf.os_pres = BME68X_OS_1X;
         conf.os_temp = BME68X_OS_2X;
@@ -81,14 +81,18 @@ void bme688_read_sensor(void) {
     } while(0);
 
     if (n_fields) {
-        TRACE_INFO("%.2f, %.2f, %.2f, %.2f, 0x%x\n",
-               data.temperature,
-               data.pressure,
-               data.humidity,
-               data.gas_resistance,
-               data.status);
+        TRACE_INFO("BME688:\r\n   "
+                   "\tTemperature: %.3f deg C\r\n\tPressure: %.3f hPa\r\n\tHumidity: %.2f%%\r\n\tGas resistance: %.2f\r\n\tStatus: 0x%x\r\n",
+                   data.temperature,
+                   data.pressure,data.humidity,data.gas_resistance,data.status);
     } else {
         TRACE_INFO("N-Fields=0\r\n");
+    }
+
+    bme688_rslt = bme68x_set_op_mode(BME68X_FORCED_MODE, &bme);
+    if(bme688_rslt < 0) {
+        TRACE_INFO("BME688 Set OP Mode Failed.\r\n");
+        bme688_error_codes_print_result("bme68x_set_op_mode", bme688_rslt);
     }
 }
 

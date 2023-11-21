@@ -94,8 +94,8 @@ int main(void)
 
 
     // Initialize BME688 sensor
-    //TRACE_INFO("Initializing indoor air quality sensor...\r\n");
-    //bme688_init_sensor();
+    TRACE_INFO("Initializing indoor air quality sensor...\r\n");
+    bme688_init_sensor();
 
     HAL_Delay(1000);
 
@@ -124,7 +124,7 @@ int main(void)
 
         bme280_read_sensor();
 
-        //bme688_read_sensor();
+        bme688_read_sensor();
 
         HAL_Delay(100);
     }
