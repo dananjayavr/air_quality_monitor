@@ -24,8 +24,9 @@ BME280_INTF_RET_TYPE bme280_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t l
     int8_t error = 0;
 
     uint8_t array[I2C_BUFFER_LEN] = {0};
-    uint8_t stringpos = 0;
     array[0] = reg_addr;
+
+    UNUSED(intf_ptr);
 
     while (HAL_I2C_IsDeviceReady(&hi2c1, BME280_ADDR, 3, 100) != HAL_OK) {}
 
@@ -34,11 +35,11 @@ BME280_INTF_RET_TYPE bme280_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t l
                               reg_addr,			// register address
                               I2C_MEMADD_SIZE_8BIT,			// bme280 uses 8bit register addresses
                               (uint8_t *)&array,			// write returned data to this variable
-                              len,							// how many bytes to expect returned
+                              (uint16_t )len,							// how many bytes to expect returned
                               100);							// timeout
 
     if(status == HAL_OK) {
-        for (stringpos = 0; stringpos < len; stringpos++) {
+        for (uint32_t stringpos = 0; stringpos < len; stringpos++) {
             *(reg_data + stringpos) = array[stringpos];
         }
 
@@ -70,6 +71,8 @@ BME280_INTF_RET_TYPE bme280_write(uint8_t reg_addr, const uint8_t *reg_data, uin
     HAL_StatusTypeDef status = HAL_OK;
     int8_t error = 0;
 
+    UNUSED(intf_ptr);
+
     while (HAL_I2C_IsDeviceReady(&hi2c1, (uint8_t)(BME280_ADDR), 3, 100) != HAL_OK) {}
 
     status = HAL_I2C_Mem_Write(&hi2c1,						// i2c handle
@@ -77,7 +80,7 @@ BME280_INTF_RET_TYPE bme280_write(uint8_t reg_addr, const uint8_t *reg_data, uin
                                reg_addr,			// register address
                                I2C_MEMADD_SIZE_8BIT,			// bme280 uses 8bit register addresses
                                (uint8_t*)(&reg_data),		// write returned data to reg_data
-                               len,							// write how many bytes
+                               (uint16_t )len,							// write how many bytes
                                100);							// timeout
 
     if (status != HAL_OK)
@@ -98,6 +101,8 @@ BME280_INTF_RET_TYPE bme280_write(uint8_t reg_addr, const uint8_t *reg_data, uin
  *
  */
 void bme280_delay(uint32_t period, void *intf_ptr) {
+    UNUSED(intf_ptr);
+
     HAL_Delay(period/1000);
 }
 

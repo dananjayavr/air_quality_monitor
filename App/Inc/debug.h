@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "stm32f4xx_hal.h"
-#include "config.h"
+#include "config/config.h"
 
 #define PRIX8        "hhX"
 #define UNUSED(X) (void)X      /* To avoid gcc/g++ warnings */

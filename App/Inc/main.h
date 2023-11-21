@@ -1,7 +1,17 @@
 #ifndef _MAIN_H
 #define _MAIN_H
 
+#include <stdio.h>
+#include <string.h>
 #include "stm32f4xx_hal.h"
+#include "debug.h"
+#include "console.h"
+#include "retarget.h"
+#include "bme280_port.h"
+
+
+
+void Error_Handler(void);
 
 #define LD1_Pin GPIO_PIN_0
 #define LD1_GPIO_Port GPIOB

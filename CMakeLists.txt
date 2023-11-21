@@ -65,18 +65,21 @@ set(STM32_HAL_DRIVERS
         Middleware/retarget/retarget.c
 
 
-        App/Inc/stm32f4xx_hal_conf.h
+        App/Inc/config/stm32f4xx_hal_conf.h
         App/Inc/stm32f4xx_it.h
         App/Inc/main.h
         App/Inc/debug.h
-        App/Inc/config.h
+        App/Inc/config/config.h
 
         App/Src/main.c
         App/Src/debug.c
+        App/Src/hardware_init.c
+        App/Src/sensors/pm_sensor.c
+        App/Src/sensors/env_sensor.c
 
-        App/Src/stm32f4xx_hal_msp.c
-        App/Src/stm32f4xx_it.c
-        App/Src/system_stm32f4xx.c
+        App/Src/system/stm32f4xx_hal_msp.c
+        App/Src/system/stm32f4xx_it.c
+        App/Src/system/system_stm32f4xx.c
 		
         startup_stm32f439xx.s
 
@@ -104,6 +107,8 @@ target_compile_definitions(${EXECUTABLE} PRIVATE
 
 target_include_directories(${EXECUTABLE} SYSTEM PRIVATE # adding system will also discard warnings from header files
         App/Inc
+        App/Inc/config
+        App/Inc/sensors
         Middleware/reusable
         Middleware/retarget
         Drivers/PMS5003
