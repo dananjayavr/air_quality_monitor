@@ -63,6 +63,9 @@ set(STM32_HAL_DRIVERS
         Drivers/SGP30/sensirion_hw_i2c_implementation.c
         Drivers/SGP30/sgp_git_version.c
         Drivers/SGP30/sgp30.c
+        Drivers/SSD1306/ssd1306.c
+        Drivers/SSD1306/ssd1306_fonts.c
+        Drivers/SSD1306/ssd1306_tests.c
 
         Middleware/reusable/console.c
         Middleware/reusable/consoleIo.c
@@ -125,6 +128,7 @@ target_include_directories(${EXECUTABLE} SYSTEM PRIVATE # adding system will als
         Drivers/BSEC/Inc
         Drivers/BSEC/Lib
         Drivers/SGP30
+        Drivers/SSD1306
         Drivers/STM32F4xx_HAL_Driver/Inc
         Drivers/CMSIS/Device/ST/STM32F4xx/Include
         Drivers/CMSIS/Include

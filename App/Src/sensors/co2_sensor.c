@@ -55,7 +55,7 @@ void sgp30_init_sensor(void) {
     uint64_t serial_id;
     err = sgp30_get_serial_id(&serial_id);
     if (err == STATUS_OK) {
-        TRACE_INFO("SerialID: %" PRIu64 "\r\n", serial_id);
+        //TRACE_INFO("SerialID: %" PRIu64 "\r\n", serial_id);
     } else {
         TRACE_INFO("sgp30_get_serial_id failed!\r\n");
     }

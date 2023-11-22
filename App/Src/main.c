@@ -4,6 +4,8 @@
 #include "sensors/env_sensor.h"
 #include "sensors/iaq_sensor.h"
 #include "sensors/co2_sensor.h"
+#include "ssd1306.h"
+#include "ssd1306_tests.h"
 
 #define TRACE_LEVEL TRACE_LEVEL_INFO
 
@@ -20,6 +22,7 @@ UART_HandleTypeDef huart3; // printf redirect
 UART_HandleTypeDef huart5; // PMS5003 particulate matter sensor
 TIM_HandleTypeDef htim2;
 I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c2;
 
 /**
   * @brief  EXTI line detection callbacks.
@@ -76,6 +79,7 @@ int main(void)
     MX_UART5_Init();
     MX_TIM2_Init();
     MX_I2C1_Init();
+    MX_I2C2_Init();
 
     /* Initialize printf UART redirect */
     RetargetInit(&huart3);
@@ -99,6 +103,9 @@ int main(void)
     // Initialize SGP30 sensor
     TRACE_INFO("Initializing CO2/VOC sensor...\r\n");
     sgp30_init_sensor();
+
+    // Test OLED
+    ssd1306_TestAll();
 
     HAL_Delay(1000);
 
