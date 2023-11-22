@@ -2,6 +2,7 @@
 // Created by Dananjaya RAMANAYAKE on 21/11/2023.
 //
 
+#include "ssd1306.h"
 #include "env_sensor.h"
 
 int8_t bme280_rslt = 0;
@@ -79,6 +80,8 @@ void bme280_init_sensor(void) {
 }
 
 void bme280_read_sensor(void) {
+    char buffer[32];
+
     // Get BME280 data
     bme280_rslt = bme280_get_regs(BME280_REG_STATUS, &bme280_status_reg, 1, &bme280);
     if(bme280_rslt < 0) {
@@ -96,10 +99,24 @@ void bme280_read_sensor(void) {
             TRACE_INFO("BME280 Get sensor data failed.\r\n");
         }
 
-        TRACE_INFO("BME280:\r\n   "
+        TRACE_DEBUG("BME280:\r\n   "
                    "\tTemperature: %.3f deg C\r\n\tPressure: %.3f hPa\r\n\tHumidity: %.3f%%\r\n", bme280_comp_data.temperature,
                    0.01 * bme280_comp_data.pressure,bme280_comp_data.humidity
         );
+
+        ssd1306_SetCursor(0, 30);
+        sprintf(buffer, "Temperature: %.3f C", bme280_comp_data.temperature);
+        ssd1306_WriteString(buffer, Font_7x10, White);
+        memset(buffer,0,32);
+        ssd1306_SetCursor(0, 40);
+        sprintf(buffer, "Pressure: %.3f hPa", bme280_comp_data.pressure);
+        ssd1306_WriteString(buffer, Font_7x10, White);
+        memset(buffer,0,32);
+        ssd1306_SetCursor(0, 50);
+        sprintf(buffer, "Humidity: %.3f %%", bme280_comp_data.humidity);
+        ssd1306_WriteString(buffer, Font_7x10, White);
+
+        ssd1306_UpdateScreen();
 
         /* set sensor mode for subsequent reads */
         bme280_rslt = bme280_set_sensor_mode(BME280_POWERMODE_FORCED, &bme280);

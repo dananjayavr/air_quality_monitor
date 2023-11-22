@@ -249,7 +249,7 @@ PMS_status PMS_swmode(PMS_typedef *PMS_struct, uint8_t PMS_MODE)
  *
  *	This function read data from sensor and store them to PMS_struct
  *	User can access data by reading from PMS_struct
- *	This function will try to read data 2 times, after 2 time with no reply or fail data, return FAIL state
+ *	This function will try to read data 4 times, after 2 time with no reply or fail data, return FAIL state
  *
  * */
 PMS_status PMS_read(PMS_typedef *PMS_struct)
@@ -258,7 +258,7 @@ PMS_status PMS_read(PMS_typedef *PMS_struct)
 	if(!_sleepflag)
 	{
 		uint8_t rxbuf[32] = {0};
-		uint8_t max_try = 2;
+		uint8_t max_try = 4;
 		switch(PMS_struct->PMS_MODE)
 		{
 		case PMS_MODE_PASSIVE:

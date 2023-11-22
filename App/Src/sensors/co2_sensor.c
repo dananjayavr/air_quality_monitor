@@ -2,8 +2,10 @@
 // Created by Dananjaya RAMANAYAKE on 22/11/2023.
 //
 #include <inttypes.h>
+#include <string.h>
 #include "debug.h"
 #include "co2_sensor.h"
+#include "ssd1306.h"
 
 uint16_t tvoc_ppb, co2_eq_ppm;
 uint32_t iaq_baseline;
@@ -63,6 +65,7 @@ void sgp30_init_sensor(void) {
 
 void sgp30_read_sensor(void) {
     int16_t err;
+    char buffer[32];
 
     /* Read gas raw signals */
     err = sgp30_measure_raw_blocking_read(&ethanol_raw_signal, &h2_raw_signal);
@@ -113,10 +116,20 @@ void sgp30_read_sensor(void) {
         }
     }
 
-    TRACE_INFO("SGP30:\r\n   "
+    TRACE_DEBUG("SGP30:\r\n   "
                "\tEthanol Raw Signal: %u\r\n\tH2 Raw Signal: %u\r\n\t"\
                "tVOC Concentration: %d ppb\r\n\tCO2eq Concentration: %d ppm\r\n", ethanol_raw_signal,
                h2_raw_signal,tvoc_ppb,co2_eq_ppm);
+
+    ssd1306_SetCursor(0, 60);
+    sprintf(buffer, "tVOC: %d ppb", tvoc_ppb);
+    ssd1306_WriteString(buffer, Font_7x10, White);
+    memset(buffer,0,32);
+    ssd1306_SetCursor(0, 70);
+    sprintf(buffer, "CO2eq: %d ppm", co2_eq_ppm);
+    ssd1306_WriteString(buffer, Font_7x10, White);
+
+    ssd1306_UpdateScreen();
 
     /* The IAQ measurement must be triggered exactly once per second (SGP30)
      * to get accurate values.

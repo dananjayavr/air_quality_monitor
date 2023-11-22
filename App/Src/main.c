@@ -105,7 +105,10 @@ int main(void)
     sgp30_init_sensor();
 
     // Test OLED
-    ssd1306_TestAll();
+    ssd1306_Init();
+    ssd1306_Fill(Black);
+    ssd1306_SetCursor(0, 0);
+    ssd1306_WriteString("IAQ Monitor", Font_11x18, White);
 
     HAL_Delay(1000);
 

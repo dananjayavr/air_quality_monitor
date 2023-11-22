@@ -1,11 +1,12 @@
 //
 // Created by Dananjaya RAMANAYAKE on 21/11/2023.
 //
-
+#include <string.h>
 #include "main.h"
 #include "bme688_port.h"
 #include "iaq_sensor.h"
 #include "bsec_interface.h"
+#include "ssd1306.h"
 
 struct bme68x_dev bme ={0};
 struct bme68x_data data = {0};
@@ -96,6 +97,7 @@ void bme688_init_sensor(void) {
 
 void bme688_read_sensor(void) {
     int8_t bme688_rslt = BME68X_OK;
+    char buffer[32];
 
     do {
         bme688_rslt = bme68x_set_op_mode(BME68X_FORCED_MODE, &bme);
@@ -118,10 +120,16 @@ void bme688_read_sensor(void) {
     } while(0);
 
     if (n_fields) {
-        TRACE_INFO("BME688:\r\n   "
+        TRACE_DEBUG("BME688:\r\n   "
                    "\tTemperature: %.3f deg C\r\n\tPressure: %.3f hPa\r\n\tHumidity: %.2f%%\r\n\tGas resistance: %.2f Ohm\r\n\tStatus: 0x%x\r\n",
                    data.temperature,
                    data.pressure * 0.01,data.humidity,data.gas_resistance,data.status);
+
+        ssd1306_SetCursor(0, 110);
+        sprintf(buffer, "Gas: %.2f Ohm", data.gas_resistance);
+        ssd1306_WriteString(buffer, Font_7x10, White);
+        ssd1306_UpdateScreen();
+
     } else {
         TRACE_INFO("N-Fields=0\r\n");
     }

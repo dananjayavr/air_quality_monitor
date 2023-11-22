@@ -1,8 +1,10 @@
 //
 // Created by Dananjaya RAMANAYAKE on 21/11/2023.
 //
+#include <string.h>
 #include "main.h"
 #include "pm_sensor.h"
+#include "ssd1306.h"
 
 PMS_typedef PMS5003 = {0};
 char mesg[1000] = {0};
@@ -27,6 +29,7 @@ void pm_sensor_init(void)
  * @brief Function to read PMS5003 data
  */
 void pm_sensor_read(void) {
+    char buffer[32];
     if (PMS_read(&PMS5003) == PMS_OK) {
 
         sprintf(mesg, "\r\n\
@@ -48,6 +51,20 @@ void pm_sensor_read(void) {
                 PMS5003.density_5_0um, PMS5003.density_10um
         );
 
-        TRACE_INFO("PMS5003: %s\r\n",mesg);
+        ssd1306_SetCursor(0, 80);
+        sprintf(buffer, "PM1.0: %d", PMS5003.PM1_0_atmospheric);
+        ssd1306_WriteString(buffer, Font_7x10, White);
+        memset(buffer,0,32);
+        ssd1306_SetCursor(0, 90);
+        sprintf(buffer, "PM2.5: %d", PMS5003.PM2_5_atmospheric);
+        ssd1306_WriteString(buffer, Font_7x10, White);
+        memset(buffer,0,32);
+        ssd1306_SetCursor(0, 100);
+        sprintf(buffer, "PM10:  %d", PMS5003.PM10_atmospheric);
+        ssd1306_WriteString(buffer, Font_7x10, White);
+
+        ssd1306_UpdateScreen();
+
+        TRACE_DEBUG("PMS5003: %s\r\n",mesg);
     }
 }
