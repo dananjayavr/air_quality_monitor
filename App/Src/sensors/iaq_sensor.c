@@ -5,6 +5,7 @@
 #include "main.h"
 #include "bme688_port.h"
 #include "iaq_sensor.h"
+#include "bsec_interface.h"
 
 struct bme68x_dev bme ={0};
 struct bme68x_data data = {0};
@@ -14,8 +15,12 @@ struct bme68x_heatr_conf heatr_conf = {0};
 uint32_t del_period;
 uint8_t n_fields;
 
+bsec_sensor_configuration_t requested_virtual_sensors[3];
+uint8_t n_requested_virtual_sensors = 3;
+
 void bme688_init_sensor(void) {
     int8_t bme688_rslt = BME68X_OK;
+    bsec_library_return_t bsec_rslt = 0;
 
     bme.read =  bme68x_i2c_read;
     bme.write = bme68x_i2c_write;
@@ -55,6 +60,38 @@ void bme688_init_sensor(void) {
         }
 
     } while (0);
+
+    do {
+        bsec_rslt = bsec_init();
+        if(bsec_rslt != BSEC_OK) {
+            TRACE_INFO("BSEC library init failed.\r\n");
+            break;
+        }
+
+        requested_virtual_sensors[0].sensor_id = BSEC_OUTPUT_IAQ;
+        requested_virtual_sensors[0].sample_rate = BSEC_SAMPLE_RATE_ULP;
+        requested_virtual_sensors[1].sensor_id = BSEC_OUTPUT_RAW_TEMPERATURE;
+        requested_virtual_sensors[1].sample_rate = BSEC_SAMPLE_RATE_ULP;
+        requested_virtual_sensors[2].sensor_id = BSEC_OUTPUT_RAW_PRESSURE;
+        requested_virtual_sensors[2].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+
+        // Allocate a struct for the returned physical sensor settings
+        bsec_sensor_configuration_t required_sensor_settings[1];
+        uint8_t  n_required_sensor_settings = 1;
+
+        required_sensor_settings[0].sensor_id = BME688_ADDR;
+        required_sensor_settings[0].sample_rate = BSEC_SAMPLE_RATE_SCAN;
+
+        // Call bsec_update_subscription() to enable/disable the requested virtual sensors
+        bsec_rslt = bsec_update_subscription(requested_virtual_sensors, n_requested_virtual_sensors, required_sensor_settings,
+                                 &n_required_sensor_settings);
+
+        if(bsec_rslt != BSEC_OK) {
+            TRACE_INFO("BSEC library update subscription failed.\r\n");
+            break;
+        }
+
+    } while (0);
 }
 
 void bme688_read_sensor(void) {
@@ -84,7 +121,7 @@ void bme688_read_sensor(void) {
         TRACE_INFO("BME688:\r\n   "
                    "\tTemperature: %.3f deg C\r\n\tPressure: %.3f hPa\r\n\tHumidity: %.2f%%\r\n\tGas resistance: %.2f Ohm\r\n\tStatus: 0x%x\r\n",
                    data.temperature,
-                   data.pressure,data.humidity,data.gas_resistance,data.status);
+                   data.pressure * 0.01,data.humidity,data.gas_resistance,data.status);
     } else {
         TRACE_INFO("N-Fields=0\r\n");
     }

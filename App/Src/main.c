@@ -3,7 +3,7 @@
 #include "sensors/pm_sensor.h"
 #include "sensors/env_sensor.h"
 #include "sensors/iaq_sensor.h"
-#include "bsec_interface.h"
+#include "sensors/co2_sensor.h"
 
 #define TRACE_LEVEL TRACE_LEVEL_INFO
 
@@ -88,17 +88,17 @@ int main(void)
     // Initialize PMS5003 sensor
     pm_sensor_init();
 
-
     // Initialize BME280 sensor
     TRACE_INFO("Initializing environmental data sensor...\r\n");
     bme280_init_sensor();
 
-
     // Initialize BME688 sensor
-    TRACE_INFO("Initializing indoor air quality sensor...\r\n");
+    TRACE_INFO("Initializing gas sensor...\r\n");
     bme688_init_sensor();
 
-    bsec_init();
+    // Initialize SGP30 sensor
+    TRACE_INFO("Initializing CO2/VOC sensor...\r\n");
+    sgp30_init_sensor();
 
     HAL_Delay(1000);
 
@@ -128,6 +128,8 @@ int main(void)
         bme280_read_sensor();
 
         bme688_read_sensor();
+
+        sgp30_read_sensor();
 
         HAL_Delay(500);
     }

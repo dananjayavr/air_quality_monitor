@@ -59,6 +59,10 @@ set(STM32_HAL_DRIVERS
         Drivers/BME280/bme280_port.c
         Drivers/BME688/bme68x.c
         Drivers/BME688/bme688_port.c
+        Drivers/SGP30/sensirion_common.c
+        Drivers/SGP30/sensirion_hw_i2c_implementation.c
+        Drivers/SGP30/sgp_git_version.c
+        Drivers/SGP30/sgp30.c
 
         Middleware/reusable/console.c
         Middleware/reusable/consoleIo.c
@@ -79,6 +83,7 @@ set(STM32_HAL_DRIVERS
         App/Src/sensors/pm_sensor.c
         App/Src/sensors/env_sensor.c
         App/Src/sensors/iaq_sensor.c
+        App/Src/sensors/co2_sensor.c
 
         App/Src/system/stm32f4xx_hal_msp.c
         App/Src/system/stm32f4xx_it.c
@@ -119,6 +124,7 @@ target_include_directories(${EXECUTABLE} SYSTEM PRIVATE # adding system will als
         Drivers/BME688
         Drivers/BSEC/Inc
         Drivers/BSEC/Lib
+        Drivers/SGP30
         Drivers/STM32F4xx_HAL_Driver/Inc
         Drivers/CMSIS/Device/ST/STM32F4xx/Include
         Drivers/CMSIS/Include
