@@ -147,6 +147,8 @@ int main(void)
 
         bme688_read_sensor();
 
+        bme688_iaq_algo();
+
         sgp30_read_sensor();
 
         HAL_Delay(500);
