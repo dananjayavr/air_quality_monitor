@@ -84,6 +84,7 @@ int main(void)
     /* Initialize printf UART redirect */
     RetargetInit(&huart3);
 
+    // Boot screen
     ssd1306_Init();
     ssd1306_Fill(Black);
     ssd1306_SetCursor(0, 0);
