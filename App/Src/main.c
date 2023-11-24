@@ -84,6 +84,14 @@ int main(void)
     /* Initialize printf UART redirect */
     RetargetInit(&huart3);
 
+    ssd1306_Init();
+    ssd1306_Fill(Black);
+    ssd1306_SetCursor(0, 0);
+    ssd1306_WriteString("Initializing...", Font_7x10, White);
+    ssd1306_UpdateScreen();
+
+    HAL_Delay(100);
+
     TRACE_INFO("*******************************\r\n");
     TRACE_INFO("Welcome to air quality monitor.\r\n");
     TRACE_INFO("*******************************\r\n");
@@ -104,8 +112,7 @@ int main(void)
     TRACE_INFO("Initializing CO2/VOC sensor...\r\n");
     sgp30_init_sensor();
 
-    // Test OLED
-    ssd1306_Init();
+    //OLED
     ssd1306_Fill(Black);
     ssd1306_SetCursor(0, 0);
     ssd1306_WriteString("IAQ Monitor", Font_11x18, White);
