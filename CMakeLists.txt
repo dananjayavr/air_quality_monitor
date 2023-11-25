@@ -66,6 +66,7 @@ set(STM32_HAL_DRIVERS
         Drivers/SSD1306/ssd1306.c
         Drivers/SSD1306/ssd1306_fonts.c
         Drivers/SSD1306/ssd1306_tests.c
+        Drivers/BSEC/Config/bsec_selectivity.c
 
         Middleware/reusable/console.c
         Middleware/reusable/consoleIo.c
@@ -127,6 +128,7 @@ target_include_directories(${EXECUTABLE} SYSTEM PRIVATE # adding system will als
         Drivers/BME688
         Drivers/BSEC/Inc
         Drivers/BSEC/Lib
+        Drivers/BSEC/Config
         Drivers/SGP30
         Drivers/SSD1306
         Drivers/STM32F4xx_HAL_Driver/Inc

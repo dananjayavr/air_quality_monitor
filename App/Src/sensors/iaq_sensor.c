@@ -6,6 +6,7 @@
 #include "bme688_port.h"
 #include "iaq_sensor.h"
 #include "bsec_interface.h"
+#include "bsec_selectivity.h"
 #include "ssd1306.h"
 
 struct bme68x_dev bme ={0};
@@ -16,8 +17,28 @@ struct bme68x_heatr_conf heatr_conf = {0};
 uint32_t del_period;
 uint8_t n_fields;
 
-bsec_sensor_configuration_t requested_virtual_sensors[1];
-uint8_t n_requested_virtual_sensors = 1;
+/* Define which sensor values to request.
+ * The order is not important, but output_ready needs to be updated if different types
+ * of sensor values are requested.
+ */
+const bsec_sensor_configuration_t bsec_requested_virtual_sensors[4] = {
+        {
+                .sensor_id   = BSEC_OUTPUT_IAQ,
+                .sample_rate = BSEC_SAMPLE_RATE_LP,
+        },
+        {
+                .sensor_id   = BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
+                .sample_rate = BSEC_SAMPLE_RATE_LP,
+        },
+        {
+                .sensor_id   = BSEC_OUTPUT_RAW_PRESSURE,
+                .sample_rate = BSEC_SAMPLE_RATE_LP,
+        },
+        {
+                .sensor_id   = BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
+                .sample_rate = BSEC_SAMPLE_RATE_LP,
+        },
+};
 
 void bme688_init_sensor(void) {
     int8_t bme688_rslt = BME68X_OK;
@@ -34,6 +55,9 @@ void bme688_init_sensor(void) {
 
     bme.delay_us = bme68x_delay_us;
     bme.amb_temp = 25; /* The ambient temperature in deg C is used for defining the heater temperature */
+
+    uint8_t work_buffer_state[BSEC_MAX_WORKBUFFER_SIZE];
+    uint32_t  n_work_buffer_size = BSEC_MAX_WORKBUFFER_SIZE;
 
     do {
         bme688_rslt = bme68x_init(&bme);
@@ -74,16 +98,23 @@ void bme688_init_sensor(void) {
             break;
         }
 
-        requested_virtual_sensors[0].sensor_id = BSEC_OUTPUT_IAQ;
-        requested_virtual_sensors[0].sample_rate = BSEC_SAMPLE_RATE_LP;
+        bsec_rslt = bsec_set_state(bsec_config_selectivity,1974,
+                                   work_buffer_state,n_work_buffer_size);
+        if(bsec_rslt != BSEC_OK) {
+            TRACE_INFO("BSEC library set state failed.\r\n");
+            break;
+        }
 
         // Call bsec_update_subscription() to enable/disable the requested virtual sensors
-        bsec_rslt = bsec_update_subscription(requested_virtual_sensors, n_requested_virtual_sensors,
+        bsec_rslt = bsec_update_subscription(bsec_requested_virtual_sensors, 4,
                                  required_sensor_settings, &n_required_sensor_settings);
         if(bsec_rslt != BSEC_OK) {
             TRACE_INFO("BSEC library update subscription failed.\r\n");
             break;
         }
+
+        run_gas[0].heater_temperature = 300;
+        run_gas[0].heater_duration = 100;
 
         bsec_rslt = bsec_sensor_control(HAL_GetTick()/1000,run_gas);
         if(bsec_rslt != BSEC_OK) {
@@ -146,27 +177,32 @@ void bme688_iaq_algo(void) {
     // Allocate input and output memory
     bsec_input_t input[3];
     uint8_t n_input = 3;
-    bsec_output_t output[2];
-    uint8_t  n_output=2;
+    bsec_output_t output[3];
+    uint8_t  n_output=3;
 
     bsec_library_return_t status;
 
+    float gas_r = data.gas_resistance;
+    float temp = data.temperature;
+    float hum = data.humidity;
+    uint32_t timestamp = HAL_GetTick() / 1000;
+
     float iaq = 0.0f;
     float static_iaq = 0.0f;
+    float accuracy = 0.0f;
 
     // Populate the input structs, assuming the we have timestamp (ts),
     // gas sensor resistance (R), temperature (T), and humidity (rH) available
     // as input variables
     input[0].sensor_id = BSEC_INPUT_GASRESISTOR;
-    input[0].signal = data.gas_resistance;
-    input[0].time_stamp= HAL_GetTick() / 1000;
+    input[0].signal = gas_r;
+    input[0].time_stamp= timestamp;
     input[1].sensor_id = BSEC_INPUT_TEMPERATURE;
-    input[1].signal = data.temperature;
-    input[1].time_stamp= HAL_GetTick() / 1000;
+    input[1].signal = temp;
+    input[1].time_stamp= timestamp;
     input[2].sensor_id = BSEC_INPUT_HUMIDITY;
-    input[2].signal = data.humidity;
-    input[2].time_stamp= HAL_GetTick() / 1000;
-
+    input[2].signal = hum;
+    input[2].time_stamp= timestamp;
 
     // Invoke main processing BSEC function
     status = bsec_do_steps( input, n_input, output, &n_output );
@@ -180,20 +216,22 @@ void bme688_iaq_algo(void) {
             {
                 case BSEC_OUTPUT_IAQ:
                     iaq = output[i].signal;
+                    accuracy = output[i].accuracy;
                     // Retrieve the IAQ results from output[i].signal
                     // and do something with the data
                     TRACE_DEBUG("IAQ: %f\r\n",iaq);
                     break;
                 case BSEC_OUTPUT_STATIC_IAQ:
                     static_iaq = output[i].signal;
+                    accuracy = output[i].accuracy;
                     // Retrieve the static IAQ results from output[i].signal
                     // and do something with the data
-                    TRACE_DEBUG("Static IAQ: %f\r\n", static_iaq);
+                    TRACE_INFO("Static IAQ: %f (%f)\r\n", static_iaq, accuracy);
                     break;
             }
 
             ssd1306_SetCursor(0, 110);
-            sprintf(buffer, "IAQ: %.2f", iaq);
+            sprintf(buffer, "IAQ: %.2f (%.2f)", iaq, accuracy);
             ssd1306_WriteString(buffer, Font_7x10, White);
             ssd1306_UpdateScreen();
         }
@@ -204,6 +242,8 @@ void bme688_iaq_algo(void) {
     {
         TRACE_INFO("BME688 IAQ algo failed.\r\n");
     }
+
+    HAL_Delay(2000);
 }
 
 void bme688_error_codes_print_result(const char api_name[], int8_t rslt)
