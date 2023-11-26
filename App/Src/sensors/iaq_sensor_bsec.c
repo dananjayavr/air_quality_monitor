@@ -3,8 +3,9 @@
 //
 
 #include "bsec_integration.h"
+#include "bsec_selectivity.h"
 #include "iaq_sensor_bsec.h"
-
+#include "ssd1306.h"
 /**********************************************************************************************************************/
 /* functions */
 /**********************************************************************************************************************/
@@ -65,6 +66,7 @@ int64_t get_timestamp_us()
  *
  * @return          none
  */
+#if 0
 void output_ready(int64_t timestamp, float gas_estimate_1, float gas_estimate_2, float gas_estimate_3, float gas_estimate_4,
                   float raw_pressure, float raw_temp, float raw_humidity, float raw_gas, uint8_t raw_gas_index, bsec_library_return_t bsec_status)
 {
@@ -74,7 +76,26 @@ void output_ready(int64_t timestamp, float gas_estimate_1, float gas_estimate_2,
     TRACE_INFO("Timestamp: %lld, Gas #1: %f, Gas #3: %f, Gas #3: %f, Gas #4: %f Pressure: %f, Temperature: %f, Humidity: %f, Gas (Raw): %f, Gas Index: %hhu\r\n",
                timestamp, gas_estimate_1,gas_estimate_2,gas_estimate_3,gas_estimate_4,raw_pressure,raw_temp,raw_humidity,raw_gas,raw_gas_index);
 }
+#endif
+void output_ready(int64_t timestamp, float iaq, float iaq_accuracy, float temp, float humidity,
+                                      float raw_pressure, float raw_temp, float static_iaq, float co2_equivalent, uint8_t breath_voc_equivalent, bsec_library_return_t bsec_status) {
+    char buffer[32];
 
+    TRACE_INFO("Status: %d:\tIAQ: %f, IAQ Accuracy: %f, Temperature: %f, Humidity: %f, Raw Pressure: %f, "
+               "Raw Temperature: %f, Static IAQ: %f, CO2 Equivalent: %f, Breath CO2 Equivalent: %d\r\n",
+               bsec_status,
+               iaq,
+               iaq_accuracy,
+               temp,
+               humidity,
+               raw_pressure,raw_temp,static_iaq,co2_equivalent, breath_voc_equivalent);
+
+    ssd1306_SetCursor(0, 110);
+    sprintf(buffer, "IAQ: %.0f (Acc. %.0f)", iaq,iaq_accuracy);
+    ssd1306_WriteString(buffer, Font_7x10, White);
+    ssd1306_UpdateScreen();
+
+}
 /*!
  * @brief           Load previous library state from non-volatile memory
  *
@@ -125,7 +146,10 @@ uint32_t config_load(uint8_t *config_buffer, uint32_t n_buffer)
     // Return zero if loading was unsuccessful or no config was available,
     // otherwise return length of loaded config string.
     // ...
-    return 0;
+    n_buffer = 1974;
+    memcpy(config_buffer,bsec_config_selectivity,n_buffer);
+
+    return n_buffer;
 }
 
 void bme688_bsec_init_sensor(void) {
@@ -140,15 +164,15 @@ void bme688_bsec_init_sensor(void) {
     bme_dev.delay_us = bme68x_delay_us;
     bme_dev.amb_temp = 25; /* The ambient temperature in deg C is used for defining the heater temperature */
 
-    bsec_iot_init(BSEC_SAMPLE_RATE_LP,0.0f,bme68x_i2c_write,
+    ret = bsec_iot_init(BSEC_SAMPLE_RATE_LP,0.0f,bme68x_i2c_write,
                   bme68x_i2c_read,sleep,state_load,config_load,bme_dev);
 
-    if (ret.bme68x_status)
+    if (ret.bme68x_status != BME68X_OK)
     {
         /* Could not intialize BME680 */
         TRACE_INFO("Could not intialize BSEC library, bme680_status=%d\r\n", ret.bme68x_status);
     }
-    else if (ret.bsec_status)
+    else if (ret.bsec_status != BSEC_OK)
     {
         /* Could not intialize BSEC library */
         TRACE_INFO("Could not intialize BSEC library, bsec_status=%d\r\n", ret.bsec_status);
