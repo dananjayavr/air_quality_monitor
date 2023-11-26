@@ -1,16 +1,32 @@
 //
 // Created by Dananjaya RAMANAYAKE on 21/11/2023.
 //
-
+#include <string.h>
 #include "bme688_port.h"
 
 extern I2C_HandleTypeDef hi2c1;
 
+#ifdef USE_BOSCH_SENSOR_API
+
+#define I2C_HANDLE hi2c1
+#define BUS_TIMEOUT HAL_MAX_DELAY
+uint8_t GTXBuffer[512], GRXBuffer[2048];
+
+#endif
 /*!
  * I2C read function map to STM32
  */
 BME68X_INTF_RET_TYPE bme68x_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
+    UNUSED(intf_ptr);
+#ifdef USE_BOSCH_SENSOR_API
+    uint16_t DevAddress = BME688_ADDR;
+
+    // send register address
+    HAL_I2C_Master_Transmit(&I2C_HANDLE, DevAddress, &reg_addr, 1, BUS_TIMEOUT);
+    HAL_I2C_Master_Receive(&I2C_HANDLE, DevAddress, reg_data, len, BUS_TIMEOUT);
+    return 0;
+#else
     HAL_StatusTypeDef status;
     uint8_t array[32] = { 0 };
     array[0] = reg_addr;
@@ -35,6 +51,7 @@ BME68X_INTF_RET_TYPE bme68x_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32
     } else {
         return -1;
     }
+#endif
 }
 
 /*!
@@ -42,6 +59,17 @@ BME68X_INTF_RET_TYPE bme68x_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32
  */
 BME68X_INTF_RET_TYPE bme68x_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
+    UNUSED(intf_ptr);
+#ifdef USE_BOSCH_SENSOR_API
+    uint16_t DevAddress = BME688_ADDR;
+
+    GTXBuffer[0] = reg_addr;
+    memcpy(&GTXBuffer[1], reg_data, len);
+
+    // send register address
+    HAL_I2C_Master_Transmit(&I2C_HANDLE, DevAddress, GTXBuffer, len+1, BUS_TIMEOUT);
+    return 0;
+#else
     HAL_StatusTypeDef status;
 
     UNUSED(intf_ptr);
@@ -61,6 +89,7 @@ BME68X_INTF_RET_TYPE bme68x_i2c_write(uint8_t reg_addr, const uint8_t *reg_data,
     } else {
         return -1;
     }
+#endif
 }
 
 void bme68x_delay_us(uint32_t period, void *intf_ptr)

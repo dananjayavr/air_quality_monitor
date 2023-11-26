@@ -2,12 +2,18 @@
 #include "hardware_init.h"
 #include "sensors/pm_sensor.h"
 #include "sensors/env_sensor.h"
-#include "sensors/iaq_sensor.h"
 #include "sensors/co2_sensor.h"
 #include "ssd1306.h"
 #include "ssd1306_tests.h"
 
 #define TRACE_LEVEL TRACE_LEVEL_INFO
+#define BSEC_ENABLED 1
+
+#if BSEC_ENABLED == 1
+#include "sensors/iaq_sensor_bsec.h"
+#else
+#include "sensors/iaq_sensor.h"
+#endif
 
 // 5x5 RGB : I2C Addr 0x74
 // BME688 : I2C Addr 0x76
@@ -107,7 +113,11 @@ int main(void)
 
     // Initialize BME688 sensor
     TRACE_INFO("Initializing gas sensor...\r\n");
+#if BSEC_ENABLED == 1
+    bme688_bsec_init_sensor();
+#else
     bme688_init_sensor();
+#endif
 
     // Initialize SGP30 sensor
     TRACE_INFO("Initializing CO2/VOC sensor...\r\n");
@@ -145,13 +155,14 @@ int main(void)
 
         bme280_read_sensor();
 
+#if BSEC_ENABLED == 1
+        bme688_bsec_read_sensor();
+#else
         bme688_read_sensor();
-
-        bme688_iaq_algo();
-
+#endif
         sgp30_read_sensor();
 
-        HAL_Delay(1000);
+        HAL_Delay(2000);
     }
 }
 

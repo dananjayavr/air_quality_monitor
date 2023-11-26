@@ -88,6 +88,8 @@ set(STM32_HAL_DRIVERS
         App/Src/sensors/env_sensor.c
         App/Src/sensors/iaq_sensor.c
         App/Src/sensors/co2_sensor.c
+        App/Src/sensors/bsec_integration.c
+        App/Src/sensors/iaq_sensor_bsec.c
 
         App/Src/system/stm32f4xx_hal_msp.c
         App/Src/system/stm32f4xx_it.c
