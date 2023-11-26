@@ -47,8 +47,6 @@ void bme688_init_sensor(void) {
     bsec_sensor_configuration_t required_sensor_settings[BSEC_MAX_PHYSICAL_SENSOR];
     uint8_t n_required_sensor_settings = BSEC_MAX_PHYSICAL_SENSOR;
 
-    bsec_bme_settings_t run_gas[1];
-
     bme.read =  bme68x_i2c_read;
     bme.write = bme68x_i2c_write;
     bme.intf =  BME68X_I2C_INTF;
@@ -98,13 +96,20 @@ void bme688_init_sensor(void) {
             break;
         }
 
+        bsec_rslt = bsec_set_configuration(bsec_config_selectivity,1974,
+                                           work_buffer_state,n_work_buffer_size);
+        if(bsec_rslt != BSEC_OK) {
+            TRACE_INFO("BSEC library set configuration failed.\r\n");
+            break;
+        }
+#if 0
         bsec_rslt = bsec_set_state(bsec_config_selectivity,1974,
                                    work_buffer_state,n_work_buffer_size);
         if(bsec_rslt != BSEC_OK) {
             TRACE_INFO("BSEC library set state failed.\r\n");
             break;
         }
-
+#endif
         // Call bsec_update_subscription() to enable/disable the requested virtual sensors
         bsec_rslt = bsec_update_subscription(bsec_requested_virtual_sensors, 4,
                                  required_sensor_settings, &n_required_sensor_settings);
@@ -112,16 +117,6 @@ void bme688_init_sensor(void) {
             TRACE_INFO("BSEC library update subscription failed.\r\n");
             break;
         }
-
-        run_gas[0].heater_temperature = 300;
-        run_gas[0].heater_duration = 100;
-
-        bsec_rslt = bsec_sensor_control(HAL_GetTick()/1000,run_gas);
-        if(bsec_rslt != BSEC_OK) {
-            TRACE_INFO("BSEC library update subscription failed.\r\n");
-            break;
-        }
-
     } while (0);
 }
 
@@ -179,8 +174,10 @@ void bme688_iaq_algo(void) {
     uint8_t n_input = 3;
     bsec_output_t output[3];
     uint8_t  n_output=3;
-
+    bsec_bme_settings_t run_gas[1];
     bsec_library_return_t status;
+
+    struct bme68x_data sensor_data[3] = {0};
 
     float gas_r = data.gas_resistance;
     float temp = data.temperature;
@@ -204,46 +201,63 @@ void bme688_iaq_algo(void) {
     input[2].signal = hum;
     input[2].time_stamp= timestamp;
 
-    // Invoke main processing BSEC function
-    status = bsec_do_steps( input, n_input, output, &n_output );
+    run_gas[0].heater_temperature = 300;
+    run_gas[0].heater_duration = 100;
 
-    // Iterate through the BSEC output data, if the call succeeded
-    if(status == BSEC_OK)
-    {
-        for(int i = 0; i < n_output; i++)
+    if(timestamp >= run_gas[0].next_call) {
+        status = bsec_sensor_control(HAL_GetTick()/1000,run_gas);
+        if(status != BSEC_OK) {
+            TRACE_INFO("BSEC library sensor control failed.\r\n");
+        }
+    }
+
+    if (run_gas[0].trigger_measurement &&
+            run_gas[0].op_mode != BME68X_SLEEP_MODE) {
+        if(bme68x_get_data(run_gas[0].op_mode, sensor_data, &n_fields, &bme) != BSEC_OK) {
+            TRACE_INFO("bme68x_get_data failed.\r\n");
+        }
+    }
+
+    if(run_gas[0].process_data != 0) {
+        // Invoke main processing BSEC function
+        status = bsec_do_steps( input, n_input, output, &n_output );
+
+        // Iterate through the BSEC output data, if the call succeeded
+        if(status == BSEC_OK)
         {
-            switch(output[i].sensor_id)
+            for(int i = 0; i < n_output; i++)
             {
-                case BSEC_OUTPUT_IAQ:
-                    iaq = output[i].signal;
-                    accuracy = output[i].accuracy;
-                    // Retrieve the IAQ results from output[i].signal
-                    // and do something with the data
-                    TRACE_DEBUG("IAQ: %f\r\n",iaq);
-                    break;
-                case BSEC_OUTPUT_STATIC_IAQ:
-                    static_iaq = output[i].signal;
-                    accuracy = output[i].accuracy;
-                    // Retrieve the static IAQ results from output[i].signal
-                    // and do something with the data
-                    TRACE_INFO("Static IAQ: %f (%f)\r\n", static_iaq, accuracy);
-                    break;
+                switch(output[i].sensor_id)
+                {
+                    case BSEC_OUTPUT_IAQ:
+                        iaq = output[i].signal;
+                        accuracy = output[i].accuracy;
+                        // Retrieve the IAQ results from output[i].signal
+                        // and do something with the data
+                        TRACE_DEBUG("IAQ: %f\r\n",iaq);
+                        break;
+                    case BSEC_OUTPUT_STATIC_IAQ:
+                        static_iaq = output[i].signal;
+                        accuracy = output[i].accuracy;
+                        // Retrieve the static IAQ results from output[i].signal
+                        // and do something with the data
+                        TRACE_INFO("Static IAQ: %f (%f)\r\n", static_iaq, accuracy);
+                        break;
+                }
+
+                ssd1306_SetCursor(0, 110);
+                sprintf(buffer, "IAQ: %.2f (%.2f)", iaq, accuracy);
+                ssd1306_WriteString(buffer, Font_7x10, White);
+                ssd1306_UpdateScreen();
             }
 
-            ssd1306_SetCursor(0, 110);
-            sprintf(buffer, "IAQ: %.2f (%.2f)", iaq, accuracy);
-            ssd1306_WriteString(buffer, Font_7x10, White);
-            ssd1306_UpdateScreen();
+            TRACE_INFO("Gas Resistance: %.2f\r\n",data.gas_resistance);
         }
-
-        TRACE_INFO("Gas Resistance: %.2f\r\n",data.gas_resistance);
+        else
+        {
+            TRACE_INFO("BME688 IAQ algo failed.\r\n");
+        }
     }
-    else
-    {
-        TRACE_INFO("BME688 IAQ algo failed.\r\n");
-    }
-
-    HAL_Delay(2000);
 }
 
 void bme688_error_codes_print_result(const char api_name[], int8_t rslt)

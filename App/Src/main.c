@@ -151,7 +151,7 @@ int main(void)
 
         sgp30_read_sensor();
 
-        HAL_Delay(500);
+        HAL_Delay(1000);
     }
 }
 
