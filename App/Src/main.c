@@ -26,7 +26,10 @@ volatile uint8_t pb_toggle; // hold toggled push button state
 UART_HandleTypeDef huart2; // UART console
 UART_HandleTypeDef huart3; // printf redirect
 UART_HandleTypeDef huart5; // PMS5003 particulate matter sensor
+
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim4;
+
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 
@@ -64,6 +67,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         HAL_TIM_Base_Stop_IT(&htim2); // Stop debounce timer
     }
+
+    if(htim->Instance == TIM4) {
+        HAL_GPIO_TogglePin(BSEC_TIMER_TEST_PIN_GPIO_Port,BSEC_TIMER_TEST_PIN_Pin);
+#if BSEC_ENABLED == 1
+        bme688_bsec_read_sensor();
+#else
+        bme688_read_sensor();
+#endif
+    }
 }
 
 /**
@@ -84,6 +96,7 @@ int main(void)
     MX_USART2_UART_Init();
     MX_UART5_Init();
     MX_TIM2_Init();
+    MX_TIM4_Init();
     MX_I2C1_Init();
     MX_I2C2_Init();
 
@@ -98,6 +111,8 @@ int main(void)
     ssd1306_UpdateScreen();
 
     HAL_Delay(100);
+
+    HAL_TIM_Base_Start_IT(&htim4);
 
     TRACE_INFO("*******************************\r\n");
     TRACE_INFO("Welcome to air quality monitor.\r\n");
@@ -155,11 +170,6 @@ int main(void)
 
         bme280_read_sensor();
 
-#if BSEC_ENABLED == 1
-        bme688_bsec_read_sensor();
-#else
-        bme688_read_sensor();
-#endif
         sgp30_read_sensor();
 
         HAL_Delay(900);

@@ -30,4 +30,7 @@ void Error_Handler(void);
 #define STLK_TX_Pin GPIO_PIN_9
 #define STLK_TX_GPIO_Port GPIOD
 
+#define BSEC_TIMER_TEST_PIN_Pin GPIO_PIN_12
+#define BSEC_TIMER_TEST_PIN_GPIO_Port GPIOD
+
 #endif //_MAIN_H

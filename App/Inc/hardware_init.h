@@ -12,6 +12,7 @@ void MX_USART2_UART_Init(void);
 void MX_USART3_UART_Init(void);
 void MX_UART5_Init(void);
 void MX_TIM2_Init(void);
+void MX_TIM4_Init(void);
 void MX_I2C1_Init(void);
 void MX_I2C2_Init(void);
 

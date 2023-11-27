@@ -2,8 +2,9 @@
 #include "stm32f4xx_it.h"
 
 extern UART_HandleTypeDef huart2;
-extern TIM_HandleTypeDef htim2;
 
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim4;
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
@@ -114,4 +115,9 @@ void TIM2_IRQHandler(void)
 
 void USART2_IRQHandler(void) {
     HAL_UART_IRQHandler(&huart2);
+}
+
+void TIM4_IRQHandler(void)
+{
+    HAL_TIM_IRQHandler(&htim4);
 }
