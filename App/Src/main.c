@@ -69,12 +69,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 
     if(htim->Instance == TIM4) {
+        HAL_NVIC_DisableIRQ(TIM4_IRQn);
         HAL_GPIO_TogglePin(BSEC_TIMER_TEST_PIN_GPIO_Port,BSEC_TIMER_TEST_PIN_Pin);
 #if BSEC_ENABLED == 1
         bme688_bsec_read_sensor();
 #else
         bme688_read_sensor();
 #endif
+        HAL_NVIC_EnableIRQ(TIM4_IRQn);
     }
 }
 
@@ -111,8 +113,6 @@ int main(void)
     ssd1306_UpdateScreen();
 
     HAL_Delay(100);
-
-    HAL_TIM_Base_Start_IT(&htim4);
 
     TRACE_INFO("*******************************\r\n");
     TRACE_INFO("Welcome to air quality monitor.\r\n");
@@ -155,6 +155,9 @@ int main(void)
     ConsoleInit();
 
     TRACE_INFO("Running state machine...\r\n");
+
+    HAL_TIM_Base_Start_IT(&htim4);
+
     /* Infinite loop */
     while (1)
     {
