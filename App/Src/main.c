@@ -34,11 +34,8 @@ TIM_HandleTypeDef htim4;
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 
-uint8_t readBuf[8] = {0};
-uint8_t writeBuf[8] = {
-        0x1,0x2,0x3,0x4,
-        0x5,0x6,0x7,0x8
-};
+message_t write_message = {0};
+message_t read_message = {0};
 
 /**
   * @brief  EXTI line detection callbacks.
@@ -162,10 +159,16 @@ int main(void)
     ConsoleInit();
 
     // Experimental EEPROM test code
-    EEPROM_Write(3,0,writeBuf,8);
-    EEPROM_Read(3,0,readBuf,8);
+    write_message.data.time = 0x1234;
+    write_message.data.lat = 0x2122;
+    write_message.data.ns = 'n';
+    write_message.data.lon = 0x1834;
+    write_message.data.ew = 'e';
 
-    if(memcmp(writeBuf,readBuf,8) == 0)
+    EEPROM_Write(0,0,write_message.bytes, sizeof(write_message.bytes));
+    EEPROM_Read(0,0,read_message.bytes,sizeof(write_message.bytes));
+
+    if(memcmp(write_message.bytes,read_message.bytes,sizeof(write_message.bytes)) == 0)
         TRACE_INFO("EEPROM Test: OK\r\n");
     else
         TRACE_INFO("EEPROM Test: Failed.\r\n");

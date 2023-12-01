@@ -9,7 +9,29 @@
 #include "retarget.h"
 #include "bme280_port.h"
 
+typedef struct message_data_unpacked_s
+{
+    uint16_t time;
+    uint16_t lat;
+    uint8_t ns;
+    uint16_t lon;
+    uint8_t ew;
+} message_data_unpacked_t;
 
+typedef struct __attribute__ ((__packed__)) message_data_s
+{
+    uint16_t time;
+    uint16_t lat;
+    uint8_t ns;
+    uint16_t lon;
+    uint8_t ew;
+} message_data_t;
+
+typedef union message_u
+{
+    message_data_t data;
+    uint8_t bytes[sizeof(message_data_t)];
+} message_t;
 
 void Error_Handler(void);
 
