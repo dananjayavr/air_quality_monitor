@@ -4,7 +4,7 @@
 #include "sensors/env_sensor.h"
 #include "sensors/co2_sensor.h"
 #include "ssd1306.h"
-#include "ssd1306_tests.h"
+#include "at24c256_eeprom.h" // TODO: change the name to something more clear
 
 #define TRACE_LEVEL TRACE_LEVEL_INFO
 #define BSEC_ENABLED 1
@@ -19,6 +19,7 @@
 // BME688 : I2C Addr 0x76
 // BME280 : I2C Addr 0x77
 // SGP30 : I2C Addr 0x58
+// AT24C256 : I2C Addr 0xA0 (EEPROM)
 
 volatile uint8_t pb_state; // hold push button state
 volatile uint8_t pb_toggle; // hold toggled push button state
@@ -32,6 +33,12 @@ TIM_HandleTypeDef htim4;
 
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
+
+uint8_t readBuf[8] = {0};
+uint8_t writeBuf[8] = {
+        0x1,0x2,0x3,0x4,
+        0x5,0x6,0x7,0x8
+};
 
 /**
   * @brief  EXTI line detection callbacks.
@@ -153,6 +160,15 @@ int main(void)
 
     TRACE_INFO("Initializing UART console...\r\n");
     ConsoleInit();
+
+    // Experimental EEPROM test code
+    EEPROM_Write(3,0,writeBuf,8);
+    EEPROM_Read(3,0,readBuf,8);
+
+    if(memcmp(writeBuf,readBuf,8) == 0)
+        TRACE_INFO("EEPROM Test: OK\r\n");
+    else
+        TRACE_INFO("EEPROM Test: Failed.\r\n");
 
     TRACE_INFO("Running state machine...\r\n");
 

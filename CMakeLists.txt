@@ -90,6 +90,7 @@ set(STM32_HAL_DRIVERS
         App/Src/sensors/co2_sensor.c
         App/Src/sensors/bsec_integration.c
         App/Src/sensors/iaq_sensor_bsec.c
+        App/Src/eeprom/at24c256_eeprom.c
 
         App/Src/system/stm32f4xx_hal_msp.c
         App/Src/system/stm32f4xx_it.c
@@ -123,6 +124,7 @@ target_include_directories(${EXECUTABLE} SYSTEM PRIVATE # adding system will als
         App/Inc
         App/Inc/config
         App/Inc/sensors
+        App/Inc/eeprom
         Middleware/reusable
         Middleware/retarget
         Drivers/PMS5003
