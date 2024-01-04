@@ -74,7 +74,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
     if(htim->Instance == TIM4) {
         HAL_NVIC_DisableIRQ(TIM4_IRQn);
-        //HAL_GPIO_TogglePin(BSEC_TIMER_TEST_PIN_GPIO_Port,BSEC_TIMER_TEST_PIN_Pin);
 #if BSEC_ENABLED == 1
         bme688_bsec_read_sensor();
 #else
@@ -166,6 +165,7 @@ int main(void)
     write_message.data.ew = 'e';
 
     EEPROM_Write(0,0,write_message.bytes, sizeof(write_message.bytes));
+    HAL_Delay(100);
     EEPROM_Read(0,0,read_message.bytes,sizeof(write_message.bytes));
 
     if(memcmp(write_message.bytes,read_message.bytes,sizeof(write_message.bytes)) == 0)
