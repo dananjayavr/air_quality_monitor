@@ -3,7 +3,7 @@
 //
 #include <inttypes.h>
 #include <string.h>
-#include "debug.h"
+#include "main.h"
 #include "co2_sensor.h"
 #include "ssd1306.h"
 
@@ -11,6 +11,8 @@ uint16_t tvoc_ppb, co2_eq_ppm;
 uint32_t iaq_baseline;
 uint16_t ethanol_raw_signal, h2_raw_signal;
 uint16_t i = 0;
+
+extern sensor_data_t sensor_data_all;
 
 void sgp30_init_sensor(void) {
 
@@ -120,6 +122,10 @@ void sgp30_read_sensor(void) {
                "\tEthanol Raw Signal: %u\r\n\tH2 Raw Signal: %u\r\n\t"\
                "tVOC Concentration: %d ppb\r\n\tCO2eq Concentration: %d ppm\r\n", ethanol_raw_signal,
                h2_raw_signal,tvoc_ppb,co2_eq_ppm);
+
+    sensor_data_all.co2_eq = co2_eq_ppm;
+    sensor_data_all.tvoc_ppb = tvoc_ppb;
+
 #if 0
     ssd1306_SetCursor(0, 60);
     sprintf(buffer, "tVOC: %d ppb", tvoc_ppb);

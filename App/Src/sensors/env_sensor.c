@@ -12,6 +12,8 @@ struct bme280_dev bme280;
 struct bme280_settings bme280Settings;
 struct bme280_data bme280_comp_data;
 
+extern sensor_data_t sensor_data_all;
+
 void bme280_init_sensor(void) {
 
     // BME280 Initialization
@@ -103,6 +105,10 @@ void bme280_read_sensor(void) {
                    "\tTemperature: %.3f deg C\r\n\tPressure: %.3f hPa\r\n\tHumidity: %.3f%%\r\n", bme280_comp_data.temperature,
                    0.01 * bme280_comp_data.pressure,bme280_comp_data.humidity
         );
+
+        sensor_data_all.temperature = bme280_comp_data.temperature;
+        sensor_data_all.pressure = bme280_comp_data.pressure;
+        sensor_data_all.humidity = bme280_comp_data.humidity;
 
         // Write temperature data to screen
         ssd1306_SetCursor(0, 30);

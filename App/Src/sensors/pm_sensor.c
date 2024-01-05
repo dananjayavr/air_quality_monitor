@@ -11,6 +11,8 @@ char mesg[1000] = {0};
 
 extern UART_HandleTypeDef huart5; // PMS5003 particulate matter sensor
 
+extern sensor_data_t sensor_data_all;
+
 /*
  * @brief Function for PMS5003 configuration
  */
@@ -51,6 +53,10 @@ void pm_sensor_read(void) {
                 PMS5003.density_5_0um, PMS5003.density_10um
         );
 
+        sensor_data_all.PM10_atmospheric = PMS5003.PM10_atmospheric;
+        sensor_data_all.PM1_0_atmospheric = PMS5003.PM1_0_atmospheric;
+        sensor_data_all.PM2_5_atmospheric = PMS5003.PM2_5_atmospheric;
+
         // PM2.5 is used when describing pollutant levels both outdoor and indoor,
         // where health impact from exposure considers amount of PM2.5 over a 24-hour period.
         // Most studies indicate PM2.5 at or below 12 μg/m3 is considered healthy with little to no risk from exposure.
@@ -60,7 +66,11 @@ void pm_sensor_read(void) {
         // Source: https://www.indoorairhygiene.org/pm2-5-explained/
 
         // Only considering PM2.5
+        ssd1306_SetCursor(0, 0);
+        ssd1306_WriteString("PM2.5", Font_7x10, White);
         ssd1306_SetCursor(0, 10);
+
+        memset(buffer,0,32);
 
         if(PMS5003.PM2_5_atmospheric < 12) {
             sprintf(buffer, "Good (%d)", PMS5003.PM2_5_atmospheric);
@@ -74,7 +84,6 @@ void pm_sensor_read(void) {
         }
 
         ssd1306_UpdateScreen();
-
         TRACE_DEBUG("PMS5003: %s\r\n",mesg);
     }
 }

@@ -36,12 +36,14 @@ UART_HandleTypeDef huart5; // PMS5003 particulate matter sensor
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim4;
+TIM_HandleTypeDef htim5;
 
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 
-message_t write_message = {0};
-message_t read_message = {0};
+sensor_data_t sensor_data_all = {0};
+calibration_t write_calibration = {0};
+calibration_t read_calibration = {0};
 
 /**
   * @brief  EXTI line detection callbacks.
@@ -87,6 +89,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 #endif
         HAL_NVIC_EnableIRQ(TIM4_IRQn);
     }
+
+    if(htim->Instance == TIM5) {
+        HAL_NVIC_DisableIRQ(TIM5_IRQn);
+#if SGP30_ENABLED == 1
+        sgp30_read_sensor();
+#endif
+        HAL_NVIC_EnableIRQ(TIM5_IRQn);
+    }
 }
 
 /**
@@ -108,6 +118,7 @@ int main(void)
     MX_UART5_Init();
     MX_TIM2_Init();
     MX_TIM4_Init();
+    MX_TIM5_Init();
     MX_I2C1_Init();
     MX_I2C2_Init();
 
@@ -143,39 +154,23 @@ int main(void)
     bme688_init_sensor();
 #endif
 
+#if SGP30_ENABLED == 1
     // Initialize SGP30 sensor
     TRACE_INFO("Initializing CO2/VOC sensor...\r\n");
     sgp30_init_sensor();
-
-    //OLED
-    ssd1306_Fill(Black);
-    ssd1306_SetCursor(0, 0);
-    ssd1306_WriteString("PM2.5", Font_7x10, White);
+#endif
 
     HAL_Delay(1000);
 
     TRACE_INFO("Initializing UART console...\r\n");
     ConsoleInit();
 
-    // Experimental EEPROM test code
-    write_message.data.time = 0x1234;
-    write_message.data.lat = 0x2122;
-    write_message.data.ns = 'n';
-    write_message.data.lon = 0x1834;
-    write_message.data.ew = 'e';
-
-    EEPROM_Write(0,0,write_message.bytes, sizeof(write_message.bytes));
-    HAL_Delay(100);
-    EEPROM_Read(0,0,read_message.bytes,sizeof(write_message.bytes));
-
-    if(memcmp(write_message.bytes,read_message.bytes,sizeof(write_message.bytes)) == 0)
-        TRACE_INFO("EEPROM Test: OK\r\n");
-    else
-        TRACE_INFO("EEPROM Test: Failed.\r\n");
-
     HAL_TIM_Base_Start_IT(&htim4);
+    HAL_TIM_Base_Start_IT(&htim5);
 
     TRACE_INFO("Running state machine...\r\n");
+
+    ssd1306_Fill(Black);
 
     /* Infinite loop */
     while (1)
@@ -191,8 +186,6 @@ int main(void)
         ConsoleProcess();
 
         bme280_read_sensor();
-
-        sgp30_read_sensor();
 
     }
 }
@@ -210,6 +203,21 @@ void Error_Handler(void)
     {
         // IMPLEMENT ME!
     }
+}
+
+void printSensorData(sensor_data_t data) {
+    printf("PM1.0 Atmospheric: %" PRIu16 "\r\n", data.PM1_0_atmospheric);
+    printf("PM2.5 Atmospheric: %" PRIu16 "\r\n", data.PM2_5_atmospheric);
+    printf("PM10 Atmospheric: %" PRIu16 "\r\n", data.PM10_atmospheric);
+    printf("Pressure: %lf\r\n", data.pressure);
+    printf("Temperature: %lf\r\n", data.temperature);
+    printf("Humidity: %lf\r\n", data.humidity);
+    printf("TVOC (ppb): %" PRIu16 "\r\n", data.tvoc_ppb);
+    printf("CO2 EQ (ppm): %" PRIu16 "\r\n", data.co2_eq_ppm);
+    printf("IAQ: %f\r\n", data.iaq);
+    printf("Accuracy: %f\r\n", data.accuracy);
+    printf("CO2 EQ: %f\r\n", data.co2_eq);
+    printf("Breath VOC: %f\r\n", data.breath_voc);
 }
 
 #ifdef  USE_FULL_ASSERT

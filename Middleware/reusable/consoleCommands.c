@@ -7,26 +7,33 @@
 //		3. Implement the function, using ConsoleReceiveParam<Type> to get the parameters from the buffer.
 
 #include <string.h>
+#include "main.h"
+#include "at24c256_eeprom.h"
 #include "consoleCommands.h"
 #include "console.h"
 #include "consoleIo.h"
-#include "version.h"
+
+extern sensor_data_t sensor_data_all;
+extern calibration_t write_calibration;
+extern calibration_t read_calibration;
 
 #define IGNORE_UNUSED_VARIABLE(x)     if ( &x == &x ) {}
 
 static eCommandResult_T ConsoleCommandComment(const char buffer[]);
 static eCommandResult_T ConsoleCommandVer(const char buffer[]);
 static eCommandResult_T ConsoleCommandHelp(const char buffer[]);
-static eCommandResult_T ConsoleCommandParamExampleInt16(const char buffer[]);
-static eCommandResult_T ConsoleCommandParamExampleHexUint16(const char buffer[]);
+static eCommandResult_T ConsoleCommandDumpPMSensorData(const char buffer[]);
+static eCommandResult_T ConsoleCommandSetSensorCalibration(const char buffer[]);
+static eCommandResult_T ConsoleCommandGetSensorCalibration(const char buffer[]);
 
 static const sConsoleCommandTable_T mConsoleCommandTable[] =
 {
     {";", &ConsoleCommandComment, HELP("Comment! You do need a space after the semicolon. ")},
     {"help", &ConsoleCommandHelp, HELP("Lists the commands available")},
-    {"ver", &ConsoleCommandVer, HELP("Get the version string")},
-    {"int", &ConsoleCommandParamExampleInt16, HELP("How to get a signed int16 from params list: int -321")},
-    {"u16h", &ConsoleCommandParamExampleHexUint16, HELP("How to get a hex u16 from the params list: u16h aB12")},
+    {"ver", &ConsoleCommandVer, HELP("Get the current firmware version")},
+    {"pm", &ConsoleCommandDumpPMSensorData, HELP("Dump particulate matter sensor data")},
+    {"setc", &ConsoleCommandSetSensorCalibration, HELP("Set calibration value")},
+    {"getc", &ConsoleCommandGetSensorCalibration, HELP("Get calibration value")},
 
 	CONSOLE_COMMAND_TABLE_END // must be LAST
 };
@@ -59,34 +66,57 @@ static eCommandResult_T ConsoleCommandHelp(const char buffer[])
 	return result;
 }
 
-static eCommandResult_T ConsoleCommandParamExampleInt16(const char buffer[])
+static eCommandResult_T ConsoleCommandDumpPMSensorData(const char buffer[])
 {
-	int16_t parameterInt;
-	eCommandResult_T result;
-	result = ConsoleReceiveParamInt16(buffer, 1, &parameterInt);
-	if ( COMMAND_SUCCESS == result )
-	{
-		ConsoleIoSendString("Parameter is ");
-		ConsoleSendParamInt16(parameterInt);
-		ConsoleIoSendString(" (0x");
-		ConsoleSendParamHexUint16((uint16_t)parameterInt);
-		ConsoleIoSendString(")");
-		ConsoleIoSendString(STR_ENDLINE);
-	}
+	eCommandResult_T result = COMMAND_SUCCESS;
+
+    // TODO: respect the data types in the initial sensor_data_t struct
+    ConsoleIoSendString("PM1.0 Atmospheric: ");
+    ConsoleSendParamInt16((int16_t )sensor_data_all.PM1_0_atmospheric);
+    ConsoleIoSendString("\r\n");
+    ConsoleIoSendString("PM2.5 Atmospheric: ");
+    ConsoleSendParamInt16((int16_t )sensor_data_all.PM2_5_atmospheric);
+    ConsoleIoSendString("\r\n");
+    ConsoleIoSendString("PM10 Atmospheric: ");
+    ConsoleSendParamInt16((int16_t )sensor_data_all.PM10_atmospheric);
+    ConsoleIoSendString("\r\n");
+
+    ConsoleIoSendString(STR_ENDLINE);
 	return result;
 }
-static eCommandResult_T ConsoleCommandParamExampleHexUint16(const char buffer[])
+
+static eCommandResult_T ConsoleCommandSetSensorCalibration(const char buffer[])
 {
-	uint16_t parameterUint16;
-	eCommandResult_T result;
-	result = ConsoleReceiveParamHexUint16(buffer, 1, &parameterUint16);
-	if ( COMMAND_SUCCESS == result )
-	{
-		ConsoleIoSendString("Parameter is 0x");
-		ConsoleSendParamHexUint16(parameterUint16);
-		ConsoleIoSendString(STR_ENDLINE);
-	}
-	return result;
+    int16_t parameterInt;
+    eCommandResult_T result;
+    result = ConsoleReceiveParamInt16(buffer, 1, &parameterInt);
+    if ( COMMAND_SUCCESS == result )
+    {
+        write_calibration.data.sgp30 = parameterInt;
+        EEPROM_Write(0,0,write_calibration.bytes,sizeof(write_calibration.bytes));
+
+        ConsoleIoSendString("Parameter is ");
+        ConsoleSendParamInt16(parameterInt);
+        ConsoleIoSendString(" (0x");
+        ConsoleSendParamHexUint16((uint16_t)parameterInt);
+        ConsoleIoSendString(") saved to EEPROM.");
+        ConsoleIoSendString(STR_ENDLINE);
+    }
+    return result;
+}
+
+static eCommandResult_T ConsoleCommandGetSensorCalibration(const char buffer[])
+{
+    eCommandResult_T result = COMMAND_SUCCESS;
+    IGNORE_UNUSED_VARIABLE(buffer);
+
+    EEPROM_Read(0,0,read_calibration.bytes,sizeof(write_calibration.bytes));
+
+    ConsoleIoSendString("Current SGP30 calibration value: ");
+    ConsoleSendParamInt16(read_calibration.data.sgp30);
+    ConsoleIoSendString(STR_ENDLINE);
+
+    return result;
 }
 
 static eCommandResult_T ConsoleCommandVer(const char buffer[])
@@ -95,7 +125,7 @@ static eCommandResult_T ConsoleCommandVer(const char buffer[])
 
     IGNORE_UNUSED_VARIABLE(buffer);
 
-	ConsoleIoSendString(VERSION_STRING);
+	ConsoleIoSendString(FW_VERSION);
 	ConsoleIoSendString(STR_ENDLINE);
 	return result;
 }

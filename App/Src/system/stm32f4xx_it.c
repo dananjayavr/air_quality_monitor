@@ -5,6 +5,7 @@ extern UART_HandleTypeDef huart2;
 
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim4;
+extern TIM_HandleTypeDef htim5;
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
@@ -120,4 +121,9 @@ void USART2_IRQHandler(void) {
 void TIM4_IRQHandler(void)
 {
     HAL_TIM_IRQHandler(&htim4);
+}
+
+void TIM5_IRQHandler(void)
+{
+    HAL_TIM_IRQHandler(&htim5);
 }

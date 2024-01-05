@@ -1,11 +1,14 @@
 //
 // Created by Dananjaya RAMANAYAKE on 21/11/2023.
 //
-
+#include "main.h"
 #include "bsec_integration.h"
 #include "bsec_selectivity.h"
 #include "iaq_sensor_bsec.h"
 #include "ssd1306.h"
+
+extern sensor_data_t sensor_data_all;
+
 /**********************************************************************************************************************/
 /* functions */
 /**********************************************************************************************************************/
@@ -90,15 +93,18 @@ void output_ready(int64_t timestamp, float iaq, float iaq_accuracy, float temp, 
                humidity,
                raw_pressure,raw_temp,static_iaq,co2_equivalent, breath_voc_equivalent);
 
+    sensor_data_all.iaq = iaq;
+    sensor_data_all.accuracy = iaq_accuracy;
+    sensor_data_all.co2_eq = co2_equivalent;
+    sensor_data_all.breath_voc = breath_voc_equivalent;
+
     ssd1306_SetCursor(0, 90);
-    if(iaq_accuracy == 0) {
-        sprintf(buffer, "IAQ Index.**"); // Need calibration
-    } else if (iaq_accuracy == 1) {
-        sprintf(buffer, "IAQ Index.**"); // Need calibration
+    if(iaq_accuracy == 0 || iaq_accuracy == 1) {
+        sprintf(buffer, "Bosch IAQ Index.**"); // Need calibration
     } else if (iaq_accuracy == 2) {
-        sprintf(buffer, "IAQ Index.*"); // Calibration might improve accuracy
+        sprintf(buffer, "Bosch IAQ Index.*"); // Calibration might improve accuracy
     } else if (iaq_accuracy == 3) {
-        sprintf(buffer, "IAQ Index"); // high accuracy
+        sprintf(buffer, "Bosch IAQ Index"); // high accuracy
     }
 
     ssd1306_WriteString(buffer, Font_7x10, White);

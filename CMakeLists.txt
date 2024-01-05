@@ -105,6 +105,7 @@ set_source_files_properties(
         Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c
         Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c
         Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c
+        Middleware/reusable/consoleCommands.c
         PROPERTIES
         COMPILE_FLAGS -Wno-unused-parameter
 )
