@@ -11,7 +11,7 @@
 #include "bme280_port.h"
 
 #define FW_VERSION "Current firmware: v0.0.1"
-#define SGP30_ENABLED 0
+#define SGP30_ENABLED 1
 
 typedef struct calibration_data_unpacked_s
 {

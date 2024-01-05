@@ -23,6 +23,7 @@ static eCommandResult_T ConsoleCommandComment(const char buffer[]);
 static eCommandResult_T ConsoleCommandVer(const char buffer[]);
 static eCommandResult_T ConsoleCommandHelp(const char buffer[]);
 static eCommandResult_T ConsoleCommandDumpPMSensorData(const char buffer[]);
+static eCommandResult_T ConsoleCommandDumpSGP30SensorData(const char buffer[]);
 static eCommandResult_T ConsoleCommandSetSensorCalibration(const char buffer[]);
 static eCommandResult_T ConsoleCommandGetSensorCalibration(const char buffer[]);
 
@@ -32,6 +33,7 @@ static const sConsoleCommandTable_T mConsoleCommandTable[] =
     {"help", &ConsoleCommandHelp, HELP("Lists the commands available")},
     {"ver", &ConsoleCommandVer, HELP("Get the current firmware version")},
     {"pm", &ConsoleCommandDumpPMSensorData, HELP("Dump particulate matter sensor data")},
+    {"sgp30", &ConsoleCommandDumpSGP30SensorData, HELP("Dump SGP30 sensor data")},
     {"setc", &ConsoleCommandSetSensorCalibration, HELP("Set calibration value")},
     {"getc", &ConsoleCommandGetSensorCalibration, HELP("Get calibration value")},
 
@@ -83,6 +85,21 @@ static eCommandResult_T ConsoleCommandDumpPMSensorData(const char buffer[])
 
     ConsoleIoSendString(STR_ENDLINE);
 	return result;
+}
+
+static eCommandResult_T ConsoleCommandDumpSGP30SensorData(const char buffer[])
+{
+    eCommandResult_T result = COMMAND_SUCCESS;
+
+    // TODO: respect the data types in the initial sensor_data_t struct
+    ConsoleIoSendString("CO2 (equivalent): ");
+    ConsoleSendParamInt16((int16_t )sensor_data_all.co2_eq);
+    ConsoleIoSendString("\r\n");
+    ConsoleIoSendString("TVOC (ppb): ");
+    ConsoleSendParamInt16((int16_t )sensor_data_all.tvoc_ppb);
+
+    ConsoleIoSendString(STR_ENDLINE);
+    return result;
 }
 
 static eCommandResult_T ConsoleCommandSetSensorCalibration(const char buffer[])
