@@ -81,7 +81,7 @@ void output_ready(int64_t timestamp, float iaq, float iaq_accuracy, float temp, 
                                       float raw_pressure, float raw_temp, float static_iaq, float co2_equivalent, uint8_t breath_voc_equivalent, bsec_library_return_t bsec_status) {
     char buffer[32];
 
-    TRACE_INFO("Status: %d:\tIAQ: %f, IAQ Accuracy: %f, Temperature: %f, Humidity: %f, Raw Pressure: %f, "
+    TRACE_DEBUG("Status: %d:\tIAQ: %f, IAQ Accuracy: %f, Temperature: %f, Humidity: %f, Raw Pressure: %f, "
                "Raw Temperature: %f, Static IAQ: %f, CO2 Equivalent: %f, Breath CO2 Equivalent: %d\r\n",
                bsec_status,
                iaq,
@@ -90,9 +90,31 @@ void output_ready(int64_t timestamp, float iaq, float iaq_accuracy, float temp, 
                humidity,
                raw_pressure,raw_temp,static_iaq,co2_equivalent, breath_voc_equivalent);
 
-    ssd1306_SetCursor(0, 110);
-    sprintf(buffer, "IAQ: %.0f (Acc. %.0f)", iaq,iaq_accuracy);
+    ssd1306_SetCursor(0, 90);
+    if(iaq_accuracy == 0) {
+        sprintf(buffer, "IAQ Index.**"); // Need calibration
+    } else if (iaq_accuracy == 1) {
+        sprintf(buffer, "IAQ Index.**"); // Need calibration
+    } else if (iaq_accuracy == 2) {
+        sprintf(buffer, "IAQ Index.*"); // Calibration might improve accuracy
+    } else if (iaq_accuracy == 3) {
+        sprintf(buffer, "IAQ Index"); // high accuracy
+    }
+
     ssd1306_WriteString(buffer, Font_7x10, White);
+    memset(buffer,0,32);
+
+    if(iaq >= 0 && iaq <= 100) {
+        sprintf(buffer,"%.0f (Good)",iaq);
+    } else if (iaq >= 101 && iaq <= 150) {
+        sprintf(buffer,"%.0f (Fair)",iaq);
+    } else {
+        sprintf(buffer,"%.0f (Bad)",iaq);
+    }
+
+    ssd1306_SetCursor(0, 100);
+    ssd1306_WriteString(buffer, Font_11x18, White);
+
     ssd1306_UpdateScreen();
 
 }

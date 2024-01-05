@@ -120,7 +120,7 @@ void sgp30_read_sensor(void) {
                "\tEthanol Raw Signal: %u\r\n\tH2 Raw Signal: %u\r\n\t"\
                "tVOC Concentration: %d ppb\r\n\tCO2eq Concentration: %d ppm\r\n", ethanol_raw_signal,
                h2_raw_signal,tvoc_ppb,co2_eq_ppm);
-
+#if 0
     ssd1306_SetCursor(0, 60);
     sprintf(buffer, "tVOC: %d ppb", tvoc_ppb);
     ssd1306_WriteString(buffer, Font_7x10, White);
@@ -128,7 +128,7 @@ void sgp30_read_sensor(void) {
     ssd1306_SetCursor(0, 70);
     sprintf(buffer, "CO2eq: %d ppm", co2_eq_ppm);
     ssd1306_WriteString(buffer, Font_7x10, White);
-
+#endif
     ssd1306_UpdateScreen();
 
     /* The IAQ measurement must be triggered exactly once per second (SGP30)

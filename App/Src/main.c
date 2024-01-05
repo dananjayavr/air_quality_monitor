@@ -1,25 +1,31 @@
+/*
+ *
+ * Sensor Addresses:
+ *
+ * 5x5 RGB : I2C Addr 0x74
+ * BME688 : I2C Addr 0x76
+ * BME280 : I2C Addr 0x77
+ * SGP30 : I2C Addr 0x58
+ * AT24C256 : I2C Addr 0xA0 (EEPROM)
+ *
+ */
+
+#define TRACE_LEVEL TRACE_LEVEL_INFO
+#define BSEC_ENABLED 1
+
 #include "main.h"
 #include "hardware_init.h"
 #include "sensors/pm_sensor.h"
 #include "sensors/env_sensor.h"
 #include "sensors/co2_sensor.h"
 #include "ssd1306.h"
-#include "at24c256_eeprom.h" // TODO: change the name to something more clear
-
-#define TRACE_LEVEL TRACE_LEVEL_INFO
-#define BSEC_ENABLED 1
+#include "at24c256_eeprom.h"
 
 #if BSEC_ENABLED == 1
 #include "sensors/iaq_sensor_bsec.h"
 #else
 #include "sensors/iaq_sensor.h"
 #endif
-
-// 5x5 RGB : I2C Addr 0x74
-// BME688 : I2C Addr 0x76
-// BME280 : I2C Addr 0x77
-// SGP30 : I2C Addr 0x58
-// AT24C256 : I2C Addr 0xA0 (EEPROM)
 
 volatile uint8_t pb_state; // hold push button state
 volatile uint8_t pb_toggle; // hold toggled push button state
@@ -117,9 +123,9 @@ int main(void)
 
     HAL_Delay(100);
 
-    TRACE_INFO("*******************************\r\n");
-    TRACE_INFO("Welcome to air quality monitor.\r\n");
-    TRACE_INFO("*******************************\r\n");
+    TRACE_INFO("**********************************\r\n");
+    TRACE_INFO("*** Indoor Air Quality Monitor ***\r\n");
+    TRACE_INFO("**********************************\r\n");
 
     TRACE_INFO("Initializing particulate matter sensor...\r\n");
     // Initialize PMS5003 sensor
@@ -144,15 +150,9 @@ int main(void)
     //OLED
     ssd1306_Fill(Black);
     ssd1306_SetCursor(0, 0);
-    ssd1306_WriteString("IAQ Monitor", Font_11x18, White);
+    ssd1306_WriteString("PM2.5", Font_7x10, White);
 
     HAL_Delay(1000);
-
-    /* Output clock speeds of the MCU */
-    TRACE_DEBUG("HCLK=%lu Hz\r\n",HAL_RCC_GetHCLKFreq());
-    TRACE_DEBUG("PCLK1=%lu Hz\r\n",HAL_RCC_GetPCLK1Freq());
-    TRACE_DEBUG("PCLK2=%lu Hz\r\n",HAL_RCC_GetPCLK2Freq());
-    TRACE_DEBUG("SYSCLK=%lu Hz\r\n",HAL_RCC_GetSysClockFreq());
 
     TRACE_INFO("Initializing UART console...\r\n");
     ConsoleInit();
@@ -173,9 +173,9 @@ int main(void)
     else
         TRACE_INFO("EEPROM Test: Failed.\r\n");
 
-    TRACE_INFO("Running state machine...\r\n");
-
     HAL_TIM_Base_Start_IT(&htim4);
+
+    TRACE_INFO("Running state machine...\r\n");
 
     /* Infinite loop */
     while (1)
@@ -194,7 +194,6 @@ int main(void)
 
         sgp30_read_sensor();
 
-        HAL_Delay(900);
     }
 }
 

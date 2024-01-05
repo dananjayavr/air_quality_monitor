@@ -104,17 +104,24 @@ void bme280_read_sensor(void) {
                    0.01 * bme280_comp_data.pressure,bme280_comp_data.humidity
         );
 
+        // Write temperature data to screen
         ssd1306_SetCursor(0, 30);
-        sprintf(buffer, "Temperature: %.3f C", bme280_comp_data.temperature);
+        sprintf(buffer, "T (C).");
         ssd1306_WriteString(buffer, Font_7x10, White);
         memset(buffer,0,32);
+        sprintf(buffer, "%.2f",bme280_comp_data.temperature);
         ssd1306_SetCursor(0, 40);
-        sprintf(buffer, "Pressure: %.3f hPa", bme280_comp_data.pressure);
+        ssd1306_WriteString(buffer, Font_11x18, White);
+
+        // Write humidity data to screen
+        memset(buffer,0,32);
+        ssd1306_SetCursor(0, 60);
+        sprintf(buffer, "H (%%).");
         ssd1306_WriteString(buffer, Font_7x10, White);
         memset(buffer,0,32);
-        ssd1306_SetCursor(0, 50);
-        sprintf(buffer, "Humidity: %.3f %%", bme280_comp_data.humidity);
-        ssd1306_WriteString(buffer, Font_7x10, White);
+        sprintf(buffer, "%.2f",bme280_comp_data.humidity);
+        ssd1306_SetCursor(0, 70);
+        ssd1306_WriteString(buffer, Font_11x18, White);
 
         ssd1306_UpdateScreen();
 

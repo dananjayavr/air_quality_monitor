@@ -51,17 +51,27 @@ void pm_sensor_read(void) {
                 PMS5003.density_5_0um, PMS5003.density_10um
         );
 
-        ssd1306_SetCursor(0, 80);
-        sprintf(buffer, "PM1.0: %d", PMS5003.PM1_0_atmospheric);
-        ssd1306_WriteString(buffer, Font_7x10, White);
-        memset(buffer,0,32);
-        ssd1306_SetCursor(0, 90);
-        sprintf(buffer, "PM2.5: %d", PMS5003.PM2_5_atmospheric);
-        ssd1306_WriteString(buffer, Font_7x10, White);
-        memset(buffer,0,32);
-        ssd1306_SetCursor(0, 100);
-        sprintf(buffer, "PM10:  %d", PMS5003.PM10_atmospheric);
-        ssd1306_WriteString(buffer, Font_7x10, White);
+        // PM2.5 is used when describing pollutant levels both outdoor and indoor,
+        // where health impact from exposure considers amount of PM2.5 over a 24-hour period.
+        // Most studies indicate PM2.5 at or below 12 μg/m3 is considered healthy with little to no risk from exposure.
+        // If the level goes to or above 35 μg/m3 during a 24-hour period,
+        // the air is considered unhealthy and can cause issues for people with existing breathing issues such as asthma.
+        // Prolonged exposure to levels above 50 μg/m3 can lead to serious health issues and premature mortality.
+        // Source: https://www.indoorairhygiene.org/pm2-5-explained/
+
+        // Only considering PM2.5
+        ssd1306_SetCursor(0, 10);
+
+        if(PMS5003.PM2_5_atmospheric < 12) {
+            sprintf(buffer, "Good (%d)", PMS5003.PM2_5_atmospheric);
+            ssd1306_WriteString(buffer, Font_11x18, White);
+        } else if (PMS5003.PM2_5_atmospheric >= 12 && PMS5003.PM2_5_atmospheric <= 35) {
+            sprintf(buffer, "Fair (%d)", PMS5003.PM2_5_atmospheric);
+            ssd1306_WriteString(buffer, Font_11x18, White);
+        } else {
+            sprintf(buffer, "Bad (%d)", PMS5003.PM2_5_atmospheric);
+            ssd1306_WriteString(buffer, Font_11x18, White);
+        }
 
         ssd1306_UpdateScreen();
 
